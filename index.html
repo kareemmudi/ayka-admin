@@ -345,7 +345,7 @@ function handleImageUpload(files){
   Array.from(files).forEach(file=>{
     const reader=new FileReader();
     reader.onload=(e)=>{
-      tempImages.push(e.target.result);
+      if(typeof tempImages !== "undefined") tempImages.push(e.target.result); else window.tempImages.push(e.target.result); window.tempImages = (typeof tempImages !== "undefined") ? tempImages : window.tempImages;
       renderImagePreview();
       renderProductEditor();
     };
@@ -405,30 +405,50 @@ async function saveProductFull(){
   
   let finalImages=[];
   const statusEl = document.getElementById('ghStatus');
+  // Sync both variables - critical fix
+  const allTemp = (typeof tempImages !== 'undefined' && tempImages.length>0) ? tempImages : (window.tempImages||[]);
+  window.tempImages = allTemp;
+  if(typeof tempImages !== 'undefined') tempImages = allTemp;
+  
   try{
-    if(window.tempImages && window.tempImages.length>0){
-      for(let i=0;i<window.tempImages.length;i++){
-        let img = window.tempImages[i];
+    if(allTemp && allTemp.length>0){
+      for(let i=0;i<allTemp.length;i++){
+        let img = allTemp[i];
         if(!img) continue;
         if(img.indexOf('data:image')===0){
-          if(statusEl) statusEl.textContent = `برفع صورة ${i+1}/${window.tempImages.length}...`;
+          if(statusEl) statusEl.textContent = `برفع صورة ${i+1}/${allTemp.length}...`;
           const res = await fetch(img);
           const blob = await res.blob();
           const compressed = await compressImageBlob(blob);
-          const url = await uploadToGitHub(compressed, `prod-${Date.now()}-${i}.webp`);
-          finalImages.push(url);
+          try{
+            const url = await uploadToGitHub(compressed, `prod-${Date.now()}-${i}.webp`);
+            finalImages.push(url);
+          }catch(err){
+            // If GitHub fails (401), keep data URL temporarily so store still shows image, and warn
+            console.error('GitHub upload failed:', err);
+            if(statusEl) statusEl.textContent = `❌ فشل الرفع: ${err.message} - هاحفظ الصورة مؤقتا`;
+            // Fallback: keep data URL if GitHub fails, but warn user
+            finalImages.push(img);
+          }
         } else if(img.indexOf('http')===0){
           finalImages.push(img);
         }
       }
     }
     finalImages = [...new Set(finalImages)];
+    // Remove data URLs that are too big for sheet if GitHub succeeded for some
+    const hasHttp = finalImages.some(u=>u.indexOf('http')===0);
+    if(hasHttp){
+      // Prefer http links, drop data URLs if we have at least one http
+      const httpOnly = finalImages.filter(u=>u.indexOf('http')===0);
+      if(httpOnly.length>0) finalImages = httpOnly;
+    }
     if(statusEl) statusEl.textContent = `✅ الصور اترفعت (${finalImages.length})`;
-    setTimeout(()=>{ if(statusEl) statusEl.textContent=""; },2000);
+    setTimeout(()=>{ if(statusEl) statusEl.textContent=""; },3000);
   }catch(e){
-    alert('خطأ في رفع الصور: '+e.message+' - تأكد من التوكن');
+    alert('خطأ في رفع الصور: '+e.message+' - تأكد من التوكن\nالصور هتتحفظ مؤقتا');
     console.error(e);
-    return;
+    finalImages = allTemp; // fallback
   }
   
   if(editingProductId){
@@ -445,7 +465,7 @@ async function saveProductFull(){
   renderProducts();
   updateStats();
   closeProductModal();
-  alert(`تم الحفظ - إجمالي المخزون ${totalStock} قطعة - هيسمع فورا في المتجر ✅${originalPrice?`\nالخصم: ${Math.round((1-price/originalPrice)*100)}% OFF`:''}`);
+  alert(`تم الحفظ - إجمالي المخزون ${totalStock} قطعة - هيسمع فورا في المتجر ✅${originalPrice?`\nالخصم: ${Math.round((1-price/originalPrice)*100)}% OFF`:''}\nالصور: ${finalImages.length}`);
 }
 
 async function pushProducts(){ localStorage.setItem('ayka_products', JSON.stringify(products)); try{ await fetch(GAS, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'saveProducts', products: products})}); }catch(e){} }
@@ -552,8 +572,8 @@ async function uploadToGitHub(fileOrBlob, fileName){
     body:JSON.stringify({message:`Add ${fileName}`, content:base64})
   });
   if(!res.ok){const t=await res.text(); throw new Error("GitHub "+res.status);}
-  const pagesUrl = `https://${repo.split('/')[0]}.github.io/${repo.split('/')[1]}/${path}`;
-  return pagesUrl;
+  const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${path}`;
+  return rawUrl;
 }
 loadGhSettings();
 
@@ -564,8 +584,7 @@ function handleMainImageFile(input){
   const reader = new FileReader();
   reader.onload = (e)=>{
     // Put main image at index 0
-    if(tempImages.length===0) tempImages = [e.target.result];
-    else tempImages[0] = e.target.result;
+    if(typeof tempImages !== "undefined"){ if(tempImages.length===0) tempImages = [e.target.result]; else tempImages[0] = e.target.result; } window.tempImages = tempImages;
     // Show preview
     const preview = document.getElementById('mainImagePreview');
     const img = document.getElementById('mainImgPrev');
@@ -576,7 +595,7 @@ function handleMainImageFile(input){
 }
 
 function clearMainImage(){
-  if(tempImages.length>0) tempImages.shift(); // remove first
+  if(typeof tempImages !== "undefined" && tempImages.length>0) tempImages.shift(); if(window.tempImages && window.tempImages.length>0) window.tempImages.shift(); // remove first
   const preview = document.getElementById('mainImagePreview');
   const input = document.getElementById('mainImageInput');
   if(preview) preview.style.display='none';
@@ -589,8 +608,10 @@ function handleExtraImagesFile(input){
   files.forEach(file=>{
     const reader = new FileReader();
     reader.onload = (e)=>{
-      tempImages.push(e.target.result);
+      if(typeof tempImages !== "undefined") tempImages.push(e.target.result); else window.tempImages.push(e.target.result); window.tempImages = (typeof tempImages !== "undefined") ? tempImages : window.tempImages;
       renderExtraPreview();
+    // Also ensure extra images visible after edit
+    if(typeof renderImagePreview === "function") renderImagePreview();
       renderImagePreview();
     };
     reader.readAsDataURL(file);
@@ -612,7 +633,7 @@ function renderExtraPreview(){
 }
 
 function removeExtraAt(idx){
-  tempImages.splice(idx,1);
+  if(typeof tempImages !== "undefined") tempImages.splice(idx,1); if(window.tempImages) window.tempImages.splice(idx,1);
   renderExtraPreview();
   renderImagePreview();
 }
@@ -621,7 +642,7 @@ function removeExtraAt(idx){
 const _origOpenAdd2 = openAddProductModal;
 openAddProductModal = function(){
   _origOpenAdd2();
-  tempImages = [];
+  tempImages = []; window.tempImages = [];
   const mp = document.getElementById('mainImagePreview'); if(mp) mp.style.display='none';
   const ep = document.getElementById('extraImagesPreview'); if(ep) ep.innerHTML='';
   const mi = document.getElementById('mainImageInput'); if(mi) mi.value='';
@@ -635,11 +656,13 @@ openEditProductModal = function(productId){
   setTimeout(()=>{
     const preview = document.getElementById('mainImagePreview');
     const img = document.getElementById('mainImgPrev');
-    if(tempImages.length>0 && preview && img){
+    if(allTemp && allTemp.length>0 && preview && img){ img.src = allTemp[0]; preview.style.display='block'; } if(allTemp && allTemp.length>1){ renderExtraPreview(); } if(tempImages.length>0 && preview && img){
       img.src = tempImages[0];
       preview.style.display='block';
     }
     renderExtraPreview();
+    // Also ensure extra images visible after edit
+    if(typeof renderImagePreview === "function") renderImagePreview();
   }, 150);
 };
 
