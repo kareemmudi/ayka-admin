@@ -60,17 +60,17 @@
 </div>
 
 <div class="main">
-<!-- GitHub Images - نفس الشكل -->
 <div class="card" style="background:#111113;border:1px solid #222;padding:14px;margin-bottom:16px">
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">
-<div style="flex:1;min-width:180px"><label style="font-size:11px;color:#888">GitHub Token (مرة واحدة)</label><input id="ghToken" class="input" placeholder="ghp_xxxx" style="margin:4px 0 0;padding:8px;font-size:12px"></div>
-<div style="flex:1;min-width:180px"><label style="font-size:11px;color:#888">Repo</label><input id="ghRepo" class="input" value="kareemmudi/ayka-images" style="margin:4px 0 0;padding:8px;font-size:12px"></div>
-<button onclick="saveGhSettings()" class="btn btn-small">حفظ</button>
-<button onclick="testGh()" class="btn-dark btn-small" style="background:#222;color:#fff;border:none;padding:8px 14px;border-radius:12px;cursor:pointer">اختبار</button>
+<div style="flex:1;min-width:160px"><label style="font-size:11px;color:#888">GitHub Token</label><input id="ghToken" class="input" placeholder="ghp_xxxx" style="margin:4px 0 0;padding:8px;font-size:12px"></div>
+<div style="flex:1;min-width:160px"><label style="font-size:11px;color:#888">Repo</label><input id="ghRepo" class="input" value="kareemmudi/ayka-images" style="margin:4px 0 0;padding:8px;font-size:12px"></div>
+<button onclick="saveGhSettings()" class="btn btn-small" style="padding:8px 12px;font-size:11px">حفظ</button>
+<button onclick="testGh()" class="btn btn-small" style="padding:8px 12px;font-size:11px;background:#222">اختبار</button>
 <span id="ghStatus" style="font-size:11px"></span>
 </div>
-<div style="font-size:10px;color:#555;margin-top:6px">اعمل ريبو ayka-images Public + توكن repo - الصور هتترفع هناك بجودة 100% - يستحمل 150 صورة ويفتح في ثانيتين</div>
+<div style="font-size:10px;color:#555;margin-top:6px">الصور هتترفع لـ ayka-images بجودة 100% - يستحمل 150 صورة</div>
 </div>
+
   <h2 id="tabTitle" style="font-size:22px;font-weight:800;margin-bottom:20px">Dashboard - Full Variants</h2>
 
   <div id="tab-dashboard">
@@ -151,24 +151,36 @@
       <div><label style="font-size:12px;color:#888">السعر قبل الخصم • Original Price (للخصم)</label><input id="pOriginalPrice" type="number" class="input" placeholder="مثال: 1200 (سيبه فاضي لو مفيش خصم)"></div>
       <div><label style="font-size:12px;color:#888">الفئة • Category</label><input id="pCategory" class="input" placeholder="Clothing"></div>
       <div><label style="font-size:12px;color:#888">ايموجي • Emoji (لو مفيش صور)</label><input id="pEmoji" class="input" placeholder="👕"></div>
-      <div style="grid-column:1 / -1"><label style="font-size:12px;color:#888">الوصف • Description</label><textarea id="pDesc" class="input" style="height:80px" placeholder="وصف المنتج..."></textarea></div>
+      <div style="grid-column:1 / -1"><label style="font-size:12px;color:#888">الوصف • Description</label><textarea id="pDesc" class="input" style="height:80px" placeholder="وصف المنتج..."></textarea>
+  <div style="grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+    <div style="background:#1a1a1d;border:2px dashed #3B82F6;border-radius:12px;padding:12px">
+      <label style="font-size:12px;font-weight:800;color:#3B82F6">📸 الصورة الرئيسية - تظهر في واجهة المتجر</label>
+      <div style="font-size:10px;color:#888;margin:4px 0 8px">من معرض الجهاز - بجودة 100% - هتظهر برا في الكارد</div>
+      <input type="file" id="mainImageInput" accept="image/*" style="display:none" onchange="handleMainImageFile(this)">
+      <button type="button" onclick="document.getElementById('mainImageInput').click()" style="width:100%;padding:12px;background:#0a0a0b;border:1px solid #3B82F6;border-radius:10px;color:#3B82F6;font-weight:800;cursor:pointer">📸 اختار الصورة الرئيسية من المعرض</button>
+      <div id="mainImagePreview" style="margin-top:10px;display:none"><img id="mainImgPrev" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:2px solid #3B82F6"><button type="button" onclick="clearMainImage()" style="margin-top:6px;padding:6px 10px;background:#2a1a1a;border:1px solid #ff4444;border-radius:6px;color:#ff8888;font-size:11px;cursor:pointer">🗑️ حذف الرئيسية</button></div>
+    </div>
+    <div style="background:#1a1a1d;border:2px dashed #666;border-radius:12px;padding:12px">
+      <label style="font-size:12px;font-weight:800;color:#aaa">📸➕ الصور الإضافية - تظهر جوه صفحة المنتج</label>
+      <div style="font-size:10px;color:#888;margin:4px 0 8px">بأي عدد - من معرض الجهاز - هتظهر جوه لما العميل يدوس على المنتج</div>
+      <input type="file" id="extraImagesInput" accept="image/*" multiple="" style="display:none" onchange="handleExtraImagesFile(this)">
+      <button type="button" onclick="document.getElementById('extraImagesInput').click()" style="width:100%;padding:12px;background:#0a0a0b;border:1px solid #555;border-radius:10px;color:#aaa;font-weight:700;cursor:pointer">📸➕ اختار صور إضافية من المعرض</button>
+      <div id="extraImagesPreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+  </div>
+</div>
     </div>
 
-    <div style="margin-top:16px">
+    <div style="margin-top: 16px; display: none;">
       <label style="font-size:12px;color:#888">صور المنتج • من المعرض بتاعك مباشرة (اختار من الفون)</label>
       <div class="upload-area" onclick="document.getElementById('imageFileInput').click()" id="uploadArea">
         <p style="font-size:14px">📸 دوس هنا عشان تختار صور من المعرض بتاعك</p>
         <p style="font-size:11px;color:#666;margin-top:6px">تقدر تختار اكتر من صورة • من الجاليري مباشرة • هتتحفظ وتظهر في المتجر فورا</p>
       </div>
       <input id="imageFileInput" type="file" accept="image/*" multiple="" style="display:none" onchange="handleImageUpload(this.files)">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-<div><label style="font-size:12px;color:#888">📸 الصورة الرئيسية - جودة 100%</label><div class="upload-area" onclick="document.getElementById('mainImageInput').click()" style="margin-top:8px;border:2px dashed #3B82F6;padding:16px;border-radius:12px;text-align:center;cursor:pointer;background:rgba(59,130,246,0.05)"><p style="font-size:13px">📸 دوس هنا - الرئيسية</p></div><input id="mainImageInput" type="file" accept="image/*" style="display:none" onchange="handleMainImage(this)"><div id="mainImagePreview" style="margin-top:10px"></div></div>
-<div><label style="font-size:12px;color:#888">📸➕ صور إضافية - جودة 100%</label><div class="upload-area" onclick="document.getElementById('extraImageInput').click()" style="margin-top:8px;border:2px dashed #444;padding:16px;border-radius:12px;text-align:center;cursor:pointer"><p style="font-size:13px">📸➕ صور إضافية</p></div><input id="extraImageInput" type="file" accept="image/*" multiple="" style="display:none" onchange="handleExtraImages(this)"><div id="extraImagesPreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px"></div></div>
-</div>
-<div id="imagePreview" class="image-preview" style="display:none"></div>
-<div id="saveStatus" style="font-size:12px;margin-top:8px;color:#3B82F6"></div>
+      <div id="imagePreview" class="image-preview"></div>
       <label style="font-size:11px;color:#666;margin-top:8px;display:block">او حط لينكات صور (اختياري):</label>
-      <input id="pImageLinks" class="input" placeholder="لينكات صور مفصولة بفاصلة - اختياري لو اخترت من المعرض">
+      <input id="pImageLinks" style="display:none" class="input" placeholder="لينكات صور مفصولة بفاصلة - اختياري لو اخترت من المعرض">
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
@@ -208,129 +220,6 @@ const GAS = "https://script.google.com/macros/s/AKfycbxzjY_Qp7_tSPpymhi_WnkHDrdY
 let products = []; let orders = []; let shippingRates = {};
 let editingProductId = null;
 let tempImages = [];
-  tempMainImageFile=null;
-  tempExtraFiles=[];
-  tempExistingUrls=[];
-  try{ const m1=document.getElementById('mainImagePreview'); if(m1) m1.innerHTML=""; const m2=document.getElementById('extraImagesPreview'); if(m2) m2.innerHTML=""; }catch(e){}
-
-
-let tempMainImageFile=null;
-let tempExtraFiles=[];
-let tempExistingUrls=[]; // urls that are already uploaded
-
-function compressImage(file, maxW=1200){
-  return new Promise((resolve)=>{
-    const img=new Image();
-    img.onload=()=>{
-      const canvas=document.createElement('canvas');
-      let w=img.width, h=img.height;
-      if(w>maxW){h=h*maxW/w; w=maxW;}
-      canvas.width=w; canvas.height=h;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      canvas.toBlob(b=>resolve(b), 'image/webp', 0.9);
-    };
-    img.onerror=()=>resolve(file);
-    img.src=URL.createObjectURL(file);
-  });
-}
-function blobToBase64(blob){
-  return new Promise(res=>{
-    const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.readAsDataURL(blob);
-  });
-}
-async function uploadToGitHub(fileOrBlob, fileName){
-  const token=localStorage.getItem('ayka_gh_token');
-  const repo=localStorage.getItem('ayka_gh_repo');
-  if(!token||!repo) throw new Error("حط التوكن والريبو فوق في الإعدادات");
-  const base64 = await blobToBase64(fileOrBlob);
-  const path = `images/${Date.now()}-${Math.random().toString(36).slice(2,7)}-${fileName.replace(/[^a-zA-Z0-9.-]/g,'')}`;
-  const url=`https://api.github.com/repos/${repo}/contents/${path}`;
-  const res=await fetch(url,{
-    method:"PUT",
-    headers:{Authorization:`token ${token}`,"Content-Type":"application/json"},
-    body:JSON.stringify({message:`Add ${fileName}`, content:base64})
-  });
-  if(!res.ok){const t=await res.text(); throw new Error("GitHub "+res.status+" - "+t.slice(0,150));}
-  const pagesUrl = `https://${repo.split('/')[0]}.github.io/${repo.split('/')[1]}/${path}`;
-  return pagesUrl;
-}
-function loadGhSettings(){
-  try{
-    const t=localStorage.getItem('ayka_gh_token')||"";
-    const r=localStorage.getItem('ayka_gh_repo')||"kareemmudi/ayka-images";
-    const te=document.getElementById('ghToken'); if(te) te.value=t;
-    const re=document.getElementById('ghRepo'); if(re) re.value=r;
-  }catch(e){}
-}
-function saveGhSettings(){
-  localStorage.setItem('ayka_gh_token', (document.getElementById('ghToken').value||"").trim());
-  localStorage.setItem('ayka_gh_repo', (document.getElementById('ghRepo').value||"").trim());
-  const s=document.getElementById('ghStatus'); if(s){s.textContent="✅ اتحفظ"; setTimeout(()=>s.textContent="",2000);}
-}
-async function testGh(){
-  const token=(document.getElementById('ghToken').value||"").trim();
-  const repo=(document.getElementById('ghRepo').value||"").trim();
-  const statusEl=document.getElementById('ghStatus');
-  if(!token||!repo){statusEl.textContent="❌ حط التوكن والريبو"; return;}
-  statusEl.textContent="⏳ بجرب...";
-  try{
-    const res=await fetch(`https://api.github.com/repos/${repo}`,{headers:{Authorization:`token ${token}`}});
-    if(res.ok){statusEl.textContent="✅ شغال - الريبو موجود"; saveGhSettings();}
-    else{statusEl.textContent="❌ "+res.status;}
-  }catch(e){statusEl.textContent="❌ "+e.message;}
-}
-loadGhSettings();
-
-function handleMainImage(input){
-  if(!input.files||!input.files[0]) return;
-  tempMainImageFile = input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const preview=document.getElementById('mainImagePreview');
-    if(preview) preview.innerHTML=`<div style="position:relative;width:120px;height:120px;border-radius:12px;overflow:hidden;border:2px solid #3B82F6"><img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover"><button onclick="clearMainImage()" style="position:absolute;top:4px;right:4px;background:red;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer">×</button><span style="position:absolute;bottom:0;left:0;right:0;background:rgba(59,130,246,0.9);color:#fff;font-size:9px;padding:2px;text-align:center">رئيسية 100%</span></div>`;
-  };
-  reader.readAsDataURL(tempMainImageFile);
-}
-function clearMainImage(){
-  tempMainImageFile=null;
-  const el=document.getElementById('mainImagePreview'); if(el) el.innerHTML="";
-  const inp=document.getElementById('mainImageInput'); if(inp) inp.value="";
-}
-function handleExtraImages(input){
-  if(!input.files) return;
-  const files=Array.from(input.files);
-  files.forEach(f=>{
-    tempExtraFiles.push(f);
-  });
-  updateExtraPreview();
-}
-function updateExtraPreview(){
-  const preview=document.getElementById('extraImagesPreview');
-  if(!preview) return;
-  preview.innerHTML="";
-  tempExtraFiles.forEach((f,i)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const div=document.createElement('div');
-      div.style.cssText="position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid #222;display:inline-block;margin:3px";
-      div.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover"><button onclick="removeExtraFile(${i})" style="position:absolute;top:2px;right:2px;background:red;color:#fff;border:none;border-radius:50%;width:14px;height:14px;cursor:pointer;font-size:9px">×</button>`;
-      preview.appendChild(div);
-    };
-    reader.readAsDataURL(f);
-  });
-  // Existing urls
-  tempExistingUrls.forEach((url,i)=>{
-    const div=document.createElement('div');
-    div.style.cssText="position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid #222;display:inline-block;margin:3px";
-    div.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover"><button onclick="removeExistingUrl('${url}')" style="position:absolute;top:2px;right:2px;background:red;color:#fff;border:none;border-radius:50%;width:14px;height:14px;cursor:pointer;font-size:9px">×</button><span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:7px;padding:1px;text-align:center">قديمة</span></div>`;
-    preview.appendChild(div);
-  });
-}
-function removeExtraFile(idx){ tempExtraFiles.splice(idx,1); updateExtraPreview(); }
-function removeExistingUrl(url){ tempExistingUrls = tempExistingUrls.filter(u=>u!==url); updateExtraPreview(); }
-
-
 let tempSizes = [];
 let tempColors = [];
 let tempVariants = {};
@@ -510,21 +399,45 @@ async function saveProductFull(){
   const category=document.getElementById('pCategory').value.trim()||'Clothing';
   const emoji=document.getElementById('pEmoji').value.trim()||'👕';
   const desc=document.getElementById('pDesc').value.trim();
-  const linksInput=document.getElementById('pImageLinks').value.trim();
-  let links=linksInput?linksInput.split(',').map(s=>s.trim()).filter(Boolean):[];
-  // Merge gallery images + links
-  const allImages=[...tempImages, ...links];
   if(!name||!price) return alert('اكمل الاسم والسعر *');
   updateTotalDisplayProduct();
   const totalStock=Object.values(tempVariants).reduce((a,b)=>a+(parseInt(b)||0),0);
   
+  let finalImages=[];
+  const statusEl = document.getElementById('ghStatus');
+  try{
+    if(window.tempImages && window.tempImages.length>0){
+      for(let i=0;i<window.tempImages.length;i++){
+        let img = window.tempImages[i];
+        if(!img) continue;
+        if(img.indexOf('data:image')===0){
+          if(statusEl) statusEl.textContent = `برفع صورة ${i+1}/${window.tempImages.length}...`;
+          const res = await fetch(img);
+          const blob = await res.blob();
+          const compressed = await compressImageBlob(blob);
+          const url = await uploadToGitHub(compressed, `prod-${Date.now()}-${i}.webp`);
+          finalImages.push(url);
+        } else if(img.indexOf('http')===0){
+          finalImages.push(img);
+        }
+      }
+    }
+    finalImages = [...new Set(finalImages)];
+    if(statusEl) statusEl.textContent = `✅ الصور اترفعت (${finalImages.length})`;
+    setTimeout(()=>{ if(statusEl) statusEl.textContent=""; },2000);
+  }catch(e){
+    alert('خطأ في رفع الصور: '+e.message+' - تأكد من التوكن');
+    console.error(e);
+    return;
+  }
+  
   if(editingProductId){
     const idx=products.findIndex(p=>p.id===editingProductId);
     if(idx>=0){
-      products[idx]={...products[idx], name, price, originalPrice: originalPrice||undefined, category, emoji, description: desc||name, images: allImages, sizes: [...tempSizes], colors: [...tempColors], variants: {...tempVariants}, stock: totalStock};
+      products[idx]={...products[idx], name, price, originalPrice: originalPrice||undefined, category, emoji, description: desc||name, images: finalImages, sizes: [...tempSizes], colors: [...tempColors], variants: {...tempVariants}, stock: totalStock};
     }
   }else{
-    const newProd={id:'p'+Date.now(), name, price, originalPrice: originalPrice||undefined, category, emoji, description: desc||name, images: allImages, sizes: [...tempSizes], colors: [...tempColors], variants: {...tempVariants}, stock: totalStock};
+    const newProd={id:'p'+Date.now(), name, price, originalPrice: originalPrice||undefined, category, emoji, description: desc||name, images: finalImages, sizes: [...tempSizes], colors: [...tempColors], variants: {...tempVariants}, stock: totalStock};
     products.unshift(newProd);
   }
   
@@ -532,7 +445,7 @@ async function saveProductFull(){
   renderProducts();
   updateStats();
   closeProductModal();
-  alert(`تم الحفظ - إجمالي المخزون ${totalStock} قطعة - هيسمع فورا في المتجر القديم ✅${originalPrice?`\nالخصم: ${Math.round((1-price/originalPrice)*100)}% OFF`:''}`);
+  alert(`تم الحفظ - إجمالي المخزون ${totalStock} قطعة - هيسمع فورا في المتجر ✅${originalPrice?`\nالخصم: ${Math.round((1-price/originalPrice)*100)}% OFF`:''}`);
 }
 
 async function pushProducts(){ localStorage.setItem('ayka_products', JSON.stringify(products)); try{ await fetch(GAS, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'saveProducts', products: products})}); }catch(e){} }
@@ -576,11 +489,167 @@ newRates["Sohag"] = parseInt(document.getElementById("ship-Sohag").value)||95;
 setInterval(()=>{ loadOrders(); loadProducts(); }, 7000);
 checkAuth();
 if(window.location.search.includes('admin=ayka2026')){ document.getElementById('adminPass').value='Ayka@2027Kareem'; setTimeout(()=>{ login(); }, 500); }
-
-// Fix add product button
-window.openAddModal = function(){ if(window.openAddProductModal) window.openAddProductModal(); };
-
 </script>
+
+<script>
+// GitHub Helpers
+function loadGhSettings(){
+  try{
+    const t=localStorage.getItem('ayka_gh_token')||"";
+    const r=localStorage.getItem('ayka_gh_repo')||"kareemmudi/ayka-images";
+    const te=document.getElementById('ghToken'); if(te) te.value=t;
+    const re=document.getElementById('ghRepo'); if(re) re.value=r;
+  }catch(e){}
+}
+function saveGhSettings(){
+  localStorage.setItem('ayka_gh_token', (document.getElementById('ghToken').value||"").trim());
+  localStorage.setItem('ayka_gh_repo', (document.getElementById('ghRepo').value||"").trim());
+  const s=document.getElementById('ghStatus'); if(s){s.textContent="✅ اتحفظ"; setTimeout(()=>s.textContent="",2000);}
+}
+async function testGh(){
+  const token=(document.getElementById('ghToken').value||"").trim();
+  const repo=(document.getElementById('ghRepo').value||"").trim();
+  const statusEl=document.getElementById('ghStatus');
+  if(!token||!repo){statusEl.textContent="❌ حط التوكن والريبو"; return;}
+  statusEl.textContent="⏳ بجرب...";
+  try{
+    const res=await fetch(`https://api.github.com/repos/${repo}`,{headers:{Authorization:`token ${token}`}});
+    if(res.ok){statusEl.textContent="✅ شغال"; saveGhSettings();}
+    else{statusEl.textContent="❌ "+res.status;}
+  }catch(e){statusEl.textContent="❌ "+e.message;}
+}
+function compressImageBlob(blob, maxW=1200){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width, h=img.height;
+      if(w>maxW){h=h*maxW/w; w=maxW;}
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      canvas.toBlob(b=>resolve(b), 'image/webp', 0.9);
+    };
+    img.onerror=()=>resolve(blob);
+    img.src=URL.createObjectURL(blob);
+  });
+}
+function blobToBase64(blob){
+  return new Promise(res=>{
+    const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.readAsDataURL(blob);
+  });
+}
+async function uploadToGitHub(fileOrBlob, fileName){
+  const token=localStorage.getItem('ayka_gh_token');
+  const repo=localStorage.getItem('ayka_gh_repo');
+  if(!token||!repo) throw new Error("حط التوكن والريبو فوق");
+  const base64 = await blobToBase64(fileOrBlob);
+  const path = `images/${Date.now()}-${Math.random().toString(36).slice(2,7)}-${fileName.replace(/[^a-zA-Z0-9.-]/g,'')}`;
+  const url=`https://api.github.com/repos/${repo}/contents/${path}`;
+  const res=await fetch(url,{
+    method:"PUT",
+    headers:{Authorization:`token ${token}`,"Content-Type":"application/json"},
+    body:JSON.stringify({message:`Add ${fileName}`, content:base64})
+  });
+  if(!res.ok){const t=await res.text(); throw new Error("GitHub "+res.status);}
+  const pagesUrl = `https://${repo.split('/')[0]}.github.io/${repo.split('/')[1]}/${path}`;
+  return pagesUrl;
+}
+loadGhSettings();
+
+// ===== 2 Image Fields - Same tempImages array - لا يكسر الإضافة والتعديل =====
+function handleMainImageFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    // Put main image at index 0
+    if(tempImages.length===0) tempImages = [e.target.result];
+    else tempImages[0] = e.target.result;
+    // Show preview
+    const preview = document.getElementById('mainImagePreview');
+    const img = document.getElementById('mainImgPrev');
+    if(preview && img){ img.src = e.target.result; preview.style.display='block'; }
+    renderImagePreview(); // original preview function
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearMainImage(){
+  if(tempImages.length>0) tempImages.shift(); // remove first
+  const preview = document.getElementById('mainImagePreview');
+  const input = document.getElementById('mainImageInput');
+  if(preview) preview.style.display='none';
+  if(input) input.value='';
+  renderImagePreview();
+}
+
+function handleExtraImagesFile(input){
+  const files = Array.from(input.files||[]);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      tempImages.push(e.target.result);
+      renderExtraPreview();
+      renderImagePreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderExtraPreview(){
+  const container = document.getElementById('extraImagesPreview');
+  if(!container) return;
+  container.innerHTML='';
+  // Show extra images (index 1+)
+  for(let i=1;i<tempImages.length;i++){
+    const src = tempImages[i];
+    const div = document.createElement('div');
+    div.style.cssText='position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid #444';
+    div.innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeExtraAt(${i})" style="position:absolute;top:2px;right:2px;background:#ff4444;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer">×</button>`;
+    container.appendChild(div);
+  }
+}
+
+function removeExtraAt(idx){
+  tempImages.splice(idx,1);
+  renderExtraPreview();
+  renderImagePreview();
+}
+
+// Hook into openAdd to reset previews
+const _origOpenAdd2 = openAddProductModal;
+openAddProductModal = function(){
+  _origOpenAdd2();
+  tempImages = [];
+  const mp = document.getElementById('mainImagePreview'); if(mp) mp.style.display='none';
+  const ep = document.getElementById('extraImagesPreview'); if(ep) ep.innerHTML='';
+  const mi = document.getElementById('mainImageInput'); if(mi) mi.value='';
+  const ei = document.getElementById('extraImagesInput'); if(ei) ei.value='';
+};
+
+const _origOpenEdit2 = openEditProductModal;
+openEditProductModal = function(productId){
+  _origOpenEdit2(productId);
+  // After original loads tempImages, render our new previews
+  setTimeout(()=>{
+    const preview = document.getElementById('mainImagePreview');
+    const img = document.getElementById('mainImgPrev');
+    if(tempImages.length>0 && preview && img){
+      img.src = tempImages[0];
+      preview.style.display='block';
+    }
+    renderExtraPreview();
+  }, 150);
+};
+
+
+try{
+  const linkInput = document.getElementById('pImageLinks');
+  if(linkInput){ linkInput.parentElement.style.display='none'; }
+}catch(e){}
+</script>
+
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
 
 </body></html>
