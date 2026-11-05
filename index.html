@@ -212,7 +212,77 @@ function loadShippingUI(){ Object.keys(defaultRates).forEach(name=>{ const el=do
 
 function renderProducts(){ const list=document.getElementById('productsList'); if(!products.length){ list.innerHTML='<p style="color:#666">لا توجد منتجات - دوس إضافة منتج</p>'; return; } list.innerHTML=products.map(p=>{ const total=p.stock||0; const variantsCount=Object.keys(p.variants||{}).length; const hasDiscount=p.originalPrice && p.originalPrice>p.price; const firstImage=(p.images&&p.images[0])||p.image||''; return `<div class="product-admin"><div style="height:180px;background:#111113;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">${firstImage?`<img src="${firstImage}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:40px">${p.emoji||'👕'}</span>`}${hasDiscount?`<span style="position:absolute;top:8px;left:8px;background:#3B82F6;color:#fff;font-size:10px;padding:4px 8px;border-radius:6px;font-weight:700">خصم ${Math.round((1-p.price/p.originalPrice)*100)}%</span>`:''}<span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);border-radius:6px;padding:4px 8px;font-size:10px">${total} متبقي • ${variantsCount} Variant</span></div><h4 style="font-size:14px;font-weight:800;margin-top:12px">${p.name}</h4><p style="font-size:11px;color:#888;margin-top:4px">${p.category||''} • ${p.sizes?.join(', ')} • ${p.colors?.join(', ')}</p><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span style="color:#3B82F6;font-weight:800">${p.price} EGP</span>${hasDiscount?`<span style="color:#666;text-decoration:line-through;font-size:11px">${p.originalPrice} EGP</span>`:''}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" style="flex:1;font-size:12px" onclick="openEditProductModal('${p.id}')">✏️ تعديل كامل (صور/سعر/خصم/مقاسات/الوان/مخزون)</button></div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-dark" style="font-size:11px;flex:1" onclick="duplicateProduct('${p.id}')">نسخ</button><button class="btn btn-danger" style="font-size:11px;flex:1" onclick="deleteProduct('${p.id}')">مسح</button></div></div>`; }).join(''); }
 
-function renderOrders(){ const list=document.getElementById('ordersList'); if(!orders.length){ list.innerHTML='<p style="color:#666">لا توجد اوردرات</p>'; return; } list.innerHTML=orders.map(o=>`<div class="card" style="background:#0a0a0b"><div style="display:flex;justify-content:space-between"><span style="color:#3B82F6;font-weight:700">${o.id}</span><span style="font-size:10px;color:#888">${new Date(o.date).toLocaleString('ar-EG')}</span></div><p style="font-size:12px;margin-top:6px">👤 ${o.customer?.name} - 📞 ${o.customer?.phone} - 📍 ${o.customer?.governorate} (${o.shipping||o.shippingCost} EGP)</p><p style="font-size:11px;margin-top:6px">${(o.items||[]).map(i=>`${i.name} [${i.size}|${i.color}] x${i.quantity||i.qty}`).join(' • ')}</p><p style="font-size:12px;color:#3B82F6;margin-top:6px">${o.total} EGP • ${o.status||'New'}</p></div>`).join(''); }
+function renderOrders(){ 
+  const list=document.getElementById('ordersList'); 
+  if(!orders.length){ list.innerHTML='<p style="color:#666">لا توجد اوردرات</p>'; return; } 
+  list.innerHTML=orders.map(o=>{
+    const status = o.status||'New';
+    const isConfirmed = status==='Confirmed';
+    return `<div class="card" style="background:#0a0a0b">
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:#3B82F6;font-weight:700">${o.id}</span>
+        <span style="font-size:10px;color:#888">${new Date(o.date).toLocaleString('ar-EG')} • <span style="padding:2px 6px;border-radius:10px;font-size:9px;${isConfirmed?'background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.3)':'background:rgba(234,179,8,0.2);color:#eab308;border:1px solid rgba(234,179,8,0.3)'}">${status}</span></span>
+      </div>
+      <p style="font-size:12px;margin-top:6px">👤 ${o.customer?.name} - 📞 ${o.customer?.phone} - 📍 ${o.customer?.governorate} (${o.shipping||o.shippingCost||0} EGP)</p>
+      <p style="font-size:11px;color:#888;margin-top:4px">${(o.items||[]).map(i=>`${i.name} [${i.size}|${i.color}] x${i.qty||i.quantity}`).join('<br>')}</p>
+      <p style="font-size:12px;color:#3B82F6;font-weight:700;margin-top:6px">${o.total} EGP • ${o.subtotal||0} + ${o.shipping||o.shippingCost||0} shipping</p>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${!isConfirmed?`<button class="btn" style="flex:1;background:#3B82F6;font-size:11px;padding:10px" onclick="confirmOrder('${o.id}')">✅ تأكيد الاوردر - خصم من المخزون</button>`:`<button class="btn" style="flex:1;background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.3);font-size:11px;padding:10px" disabled>✅ تم التأكيد - تم خصم المخزون</button>`}
+        <button class="btn" style="flex:1;background:#25D366;font-size:11px;padding:10px" onclick="openWhatsApp('${o.id}')">💬 واتساب العميل</button>
+      </div>
+    </div>`;
+  }).join(''); 
+}
+
+async function confirmOrder(orderId){
+  if(!confirm('هل تريد تأكيد الاوردر '+orderId+' وخصم الكمية من المخزون فورا؟')) return;
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return alert('Order not found');
+  if(order.status==='Confirmed') return alert('تم التأكيد مسبقا');
+  try{
+    const r = await fetch(GAS+"?action=getAll&t="+Date.now());
+    const d = await r.json();
+    let latestProducts = d.products||products;
+    let changed = false;
+    (order.items||[]).forEach(item=>{
+      const prod = latestProducts.find(p=>p.id===item.productId||p.id===item.id);
+      if(!prod) return;
+      const key = `${item.size}|${item.color}`;
+      if(prod.variants && prod.variants[key]!==undefined){
+        let cur = parseInt(prod.variants[key])||0;
+        let qty = parseInt(item.qty||item.quantity)||1;
+        prod.variants[key] = Math.max(0, cur - qty);
+        changed = true;
+      } else if(prod.stock!==undefined){
+        let qty = parseInt(item.qty||item.quantity)||1;
+        prod.stock = Math.max(0, (prod.stock||0) - qty);
+        changed = true;
+      }
+      if(prod.variants){
+        try{ prod.stock = Object.values(prod.variants).reduce((a,b)=>a+(parseInt(b)||0),0); }catch(e){}
+      }
+    });
+    if(changed){
+      await fetch(GAS, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'saveProducts', products:latestProducts})});
+    }
+    order.status = 'Confirmed';
+    await fetch(GAS, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'saveOrder', order:order})});
+    alert('✅ تم تأكيد الاوردر وخصم المخزون فورا!');
+    loadAll();
+  }catch(e){ alert('خطأ: '+e.message); }
+}
+
+function openWhatsApp(orderId){
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const cust = order.customer||{};
+  let phone = (cust.phone||'').replace(/[^0-9]/g,'');
+  if(phone.startsWith('01')) phone = '2'+phone;
+  const itemsText = (order.items||[]).map(i=>`- ${i.name} [${i.size}|${i.color}] x${i.qty||i.quantity}`).join('%0A');
+  const message = `مرحبا ${cust.name||''} 👋%0A%0Aتم تأكيد طلبك من AYKA STORE ✅%0A%0A🆔 رقم الطلب: ${order.id}%0A📦 المنتجات:%0A${itemsText}%0A%0A💰 الإجمالي: ${order.total} جنيه (شامل الشحن ${order.shipping||order.shippingCost} جنيه - ${cust.governorate})%0A📍 العنوان: ${cust.address||''}%0A%0Aسيتم التواصل معك في أقرب وقت لتأكيد التوصيل 🚚%0Aشكرا لثقتك في AYKA! 🖤`;
+  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+}
+
 
 // Product Modal Full
 function openAddProductModal(){
