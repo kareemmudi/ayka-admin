@@ -144,24 +144,7 @@
     </div>
 
     <div style="margin-top:16px">
-      <label style="font-size:12px;color:#888">صور المنتج • من المعرض بتاعك مباشرة (اختار من الفون)</label>
-      <div class="upload-area" onclick="document.getElementById('imageFileInput').click()" id="uploadArea">
-        <p style="font-size:14px">📸 دوس هنا عشان تختار صور من المعرض بتاعك</p>
-        <p style="font-size:11px;color:#666;margin-top:6px">تقدر تختار اكتر من صورة • من الجاليري مباشرة • هتتحفظ وتظهر في المتجر فورا</p>
-      </div>
-      <!-- Main Image from Gallery -->
-      <input id="mainImageFileInput" type="file" accept="image/*" style="display:none" onchange="handleMainImageUpload(this.files)">
-      <input id="additionalImagesFileInput" type="file" accept="image/*" multiple="" style="display:none" onchange="handleAdditionalImagesUpload(this.files)">
       
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:700">📸 الصورة الرئيسية • من المعرض (دي اللي هتظهر في واجهة المتجر)</label>
-          <div class="upload-area" onclick="document.getElementById('mainImageFileInput').click()" style="margin-top:8px;border-color:#3B82F6">
-            <p style="font-size:13px">📸 دوس هنا - اختار الصورة الرئيسية من المعرض</p>
-            <p style="font-size:10px;color:#666;margin-top:4px">صورة واحدة بس - هتظهر في واجهة المتجر</p>
-          </div>
-          <div id="mainImagePreview" style="margin-top:10px"></div>
-        </div>
         <div>
           <label style="font-size:12px;color:#888;font-weight:700">📸➕ صور إضافية • من المعرض (بأي عدد)</label>
           <div class="upload-area" onclick="document.getElementById('additionalImagesFileInput').click()" style="margin-top:8px">
@@ -206,7 +189,7 @@
       <button class="btn btn-dark" style="flex:0.3;padding:14px" onclick="closeProductModal()">إلغاء</button>
     </div>
   </div>
-</div>
+
 
 <script>
 const GAS = "https://script.google.com/macros/s/AKfycbxzjY_Qp7_tSPpymhi_WnkHDrdYFQwSyMNned1x9rU4MQPKQ5QG3xJGGR79qzlZA7Zl/exec";
@@ -243,8 +226,7 @@ function openAddProductModal(){
   tempMainImage=null;
   tempAdditionalImages=[];
   tempImages=[];
-  document.getElementById('mainImagePreview').innerHTML='';
-  document.getElementById('additionalImagesPreview').innerHTML='';
+  try{ document.getElementById('mainImagePreview').innerHTML=''; document.getElementById('additionalImagesPreview').innerHTML=''; }catch(e){}
    tempSizes=["S","M","L","XL"]; tempColors=["Black","White"]; tempVariants={};
   tempSizes.forEach(s=>{ tempColors.forEach(c=>{ tempVariants[`${s}|${c}`]=10; }) });
   document.getElementById('productModalTitle').textContent="إضافة منتج جديد • Add Product";
@@ -275,18 +257,15 @@ function openEditProductModal(productId){
 function closeProductModal(){ document.getElementById('productModal').classList.remove('active'); editingProductId=null; }
 
 
+
 function handleMainImageUpload(files){
   if(!files||!files.length) return;
   const file = files[0];
-  if(file.size>2*1024*1024){ alert('الصورة كبيرة اوي - اختار صورة اصغر من 2 ميجا'); return; }
+  if(file.size>5*1024*1024){ alert('الصورة كبيرة اوي - اختار صورة اصغر من 5 ميجا عشان ترفع بسرعة'); return; }
   const reader = new FileReader();
   reader.onload = function(e){
-    tempMainImage = e.target.result;
-    // Compress image to avoid hanging
-    compressImage(e.target.result, 800, 0.7, function(compressed){
-      tempMainImage = compressed;
-      document.getElementById('mainImagePreview').innerHTML = `<div style="position:relative;width:120px;height:120px;border-radius:12px;overflow:hidden;border:2px solid #3B82F6"><img src="${compressed}" style="width:100%;height:100%;object-fit:cover"><button onclick="removeMainImage()" style="position:absolute;top:4px;right:4px;background:red;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer">×</button><span style="position:absolute;bottom:0;left:0;right:0;background:rgba(59,130,246,0.9);color:#fff;font-size:9px;padding:2px;text-align:center">رئيسية</span></div>`;
-    });
+    tempMainImage = e.target.result; // جودة 100%
+    document.getElementById('mainImagePreview').innerHTML = `<div style="position:relative;width:120px;height:120px;border-radius:12px;overflow:hidden;border:2px solid #3B82F6"><img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover"><button onclick="removeMainImage()" style="position:absolute;top:4px;right:4px;background:red;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer">×</button><span style="position:absolute;bottom:0;left:0;right:0;background:rgba(59,130,246,0.9);color:#fff;font-size:9px;padding:2px;text-align:center">رئيسية - جودة 100%</span></div>`;
   };
   reader.readAsDataURL(file);
 }
@@ -294,35 +273,19 @@ function handleMainImageUpload(files){
 function handleAdditionalImagesUpload(files){
   if(!files||!files.length) return;
   Array.from(files).forEach(file=>{
-    if(file.size>2*1024*1024){ alert('صورة '+file.name+' كبيرة اوي - اختار صور اصغر من 2 ميجا'); return; }
+    if(file.size>5*1024*1024){ alert('صورة '+file.name+' كبيرة اوي - اختار صور اصغر من 5 ميجا'); return; }
     const reader = new FileReader();
     reader.onload = function(e){
-      compressImage(e.target.result, 800, 0.7, function(compressed){
-        tempAdditionalImages.push(compressed);
-        updateAdditionalImagesPreview();
-      });
+      tempAdditionalImages.push(e.target.result); // جودة 100%
+      updateAdditionalImagesPreview();
     };
     reader.readAsDataURL(file);
   });
 }
 
 function compressImage(dataUrl, maxWidth, quality, callback){
-  const img = new Image();
-  img.onload = function(){
-    const canvas = document.createElement('canvas');
-    let width = img.width;
-    let height = img.height;
-    if(width>maxWidth){
-      height = (height*maxWidth)/width;
-      width = maxWidth;
-    }
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, width, height);
-    callback(canvas.toDataURL('image/jpeg', quality));
-  };
-  img.src = dataUrl;
+  // تم تعطيل الضغط للحفاظ على جودة 100% - هنبعت الاصلي لـ Drive
+  callback(dataUrl);
 }
 
 function removeMainImage(){
@@ -336,6 +299,7 @@ function updateAdditionalImagesPreview(){
     <div style="position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid #222;display:inline-block;margin:4px">
       <img src="${img}" style="width:100%;height:100%;object-fit:cover">
       <button onclick="removeAdditionalImage(${i})" style="position:absolute;top:2px;right:2px;background:red;color:#fff;border:none;border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:10px">×</button>
+      <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:7px;padding:1px;text-align:center">100%</span>
     </div>
   `).join('');
 }
@@ -346,9 +310,9 @@ function removeAdditionalImage(idx){
 }
 
 function handleImageUpload(files){
-  // Old function - redirect to additional
   handleAdditionalImagesUpload(files);
 }
+
 
 
 function renderImagePreview(){
