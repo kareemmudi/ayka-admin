@@ -2551,35 +2551,22 @@ summary {
   }
 }
 </style>
-<style id="dashboard-alone-style">
-        /* Hide store UI completely */
-        body > header, body > section, body > main, body > footer, #products, #adminDot {
-          display: none !important;
-        }
-        /* But show dashboard modals - they are fixed inset-0 */
-        body {
-          background: #0a0a0b !important;
-          overflow: auto !important;
-        }
-        /* Force dashboard to be visible fullscreen and alone */
-        div[class*="fixed"][class*="inset-0"] {
-          display: flex !important;
-          position: fixed !important;
-          inset: 0 !important;
-          z-index: 9999 !important;
-          background: #0a0a0b !important;
-          opacity: 1 !important;
-          visibility: visible !important;
-          pointer-events: auto !important;
-        }
-        /* Make dashboard content scrollable and centered */
-        div[class*="fixed"][class*="inset-0"] > div {
-          max-height: 100vh;
-          overflow-y: auto;
-        }
-      </style></head>
+</head>
 <body>
-  <div id="root"><div id="adminLogin" class="min-h-screen bg-[#0a0a0b] text-white flex items-center justify-center p-4" style="font-family: &quot;Space Grotesk&quot;, system-ui;"><style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Cairo:wght@400;700&display=swap');</style><div class="w-full max-w-sm bg-[#111113] border border-[#222] rounded-2xl p-8 shadow-[0_0_40px_rgba(59,130,246,0.15)]"><div class="mb-6 text-center"><h1 class="text-3xl font-bold tracking-[0.2em]">AYKA<span class="text-[#3B82F6]">.</span> ADMIN</h1><p class="text-xs text-[#888] mt-2 tracking-wide">SECURE ACCESS • ENTER PASSWORD</p></div><input id="adminPass" type="password" placeholder="••••••••" class="w-full bg-[#0a0a0b] border border-[#222] rounded-xl px-4 py-3 text-sm focus:border-[#3B82F6] outline-none mb-4" value=""><button class="w-full bg-[#3B82F6] hover:bg-[#2563eb] text-white rounded-xl py-3 font-bold text-sm tracking-widest transition">UNLOCK</button><button class="w-full mt-3 text-xs text-[#666] hover:text-white">← Back to Store</button><p class="mt-6 text-[10px] text-[#444] text-center">3 access methods: ?admin=ayka2026 • 5x logo • footer dot<br>Owner: Kareemmudii@gmail.com</p></div></div></div>
+  <div id="root"><div class="min-h-screen bg-[#0a0a0b] text-white selection:bg-[#3B82F6]/30" style="font-family: &quot;Space Grotesk&quot;, Cairo, system-ui, sans-serif; padding-top: var(--safe-area-inset-top); box-sizing: border-box;"><style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Cairo:wght@400;600;700&display=swap');
+        :root { --bg:#0a0a0b; --surface:#111113; --border:#222; --accent:#3B82F6; }
+        * { scrollbar-width: thin; scrollbar-color: #222 #0a0a0b; }
+        ::-webkit-scrollbar { width:6px; height:6px; } ::-webkit-scrollbar-thumb { background:#222; border-radius:10px; }
+        .neon-text { text-shadow: 0 0 10px rgba(59,130,246,0.8), 0 0 30px rgba(59,130,246,0.4), 0 0 60px rgba(59,130,246,0.2); }
+        .neon-border { box-shadow: 0 0 20px rgba(59,130,246,0.25), inset 0 0 20px rgba(59,130,246,0.05); }
+        .glitch { position:relative; }
+        .glitch:before { content: attr(data-text); position:absolute; left:-1px; top:0; color:#3B82F6; opacity:0.7; clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%); animation: glitch1 3s infinite linear alternate-reverse; }
+        .glitch:after { content: attr(data-text); position:absolute; left:1px; top:0; color:#fff; opacity:0.5; clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%); animation: glitch2 2s infinite linear alternate-reverse; }
+        @keyframes glitch1 { 0% { transform: translate(0); } 20% { transform: translate(-1px,1px); } 100% { transform: translate(0); } }
+        @keyframes glitch2 { 0% { transform: translate(0); } 20% { transform: translate(1px,-1px); } 100% { transform: translate(0); } }
+        @media (max-width:390px){ .no-x { overflow-x: clip; } }
+      </style><audio id="bgMusic" loop="" preload="none" crossorigin="anonymous"><source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg"></audio><header class="sticky top-[var(--safe-area-inset-top)] z-40 bg-[#0a0a0b]/90 backdrop-blur-xl border-b border-[#1a1a1d] no-x" style="overflow-x: clip;"><div class="mx-auto max-w-[1400px] px-4 md:px-8 h-[64px] flex items-center justify-between gap-4"><div class="flex items-center gap-6"><button id="aykaLogo" class="group flex items-center gap-1 select-none" style="cursor: default;"><span data-text="AYKA" class="glitch text-[28px] font-black tracking-[0.32em] leading-none" style="pointer-events: none;">AYKA</span></button><div class="hidden md:flex relative"><button class="flex items-center gap-2 text-[12px] tracking-widest uppercase text-[#aaa] hover:text-white border border-[#222] rounded-full px-4 py-1.5 hover:border-[#3B82F6]/50 transition">Categories <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down  transition"><path d="m6 9 6 6 6-6"></path></svg></button></div></div><div class="flex-1 max-w-[380px] hidden md:flex items-center"><div class="w-full relative"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search streetwear, shoes, bags..." class="w-full bg-[#111113] border border-[#222] rounded-full pl-9 pr-4 py-2 text-[13px] placeholder:text-[#555] focus:border-[#3B82F6]/50 focus:outline-none transition" value=""></div></div><div class="flex items-center gap-2"><button title="Play lofi music" class="relative bg-[#111113] border rounded-full w-10 h-10 flex items-center justify-center transition group border-[#222] hover:border-[#3B82F6]/50 text-[#aaa] hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></button><button title="Switch to Arabic - التحويل للعربية" class="relative bg-[#111113] border border-[#222] hover:border-[#3B82F6]/50 rounded-full w-10 h-10 flex items-center justify-center transition group text-[11px] font-black tracking-widest"><span class="group-hover:text-[#3B82F6] transition ">AR</span></button><button class="relative bg-[#111113] border border-[#222] hover:border-[#3B82F6]/50 rounded-full w-10 h-10 flex items-center justify-center transition group"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-bag group-hover:text-[#3B82F6] transition"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg></button><button class="md:hidden bg-[#111113] border border-[#222] rounded-full w-10 h-10 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></div></header><section class="relative overflow-hidden border-b border-[#1a1a1d] no-x min-h-[36vh] md:min-h-[40vh] flex items-center" style="overflow-x: clip;"><div class="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/20 via-transparent to-transparent pointer-events-none"></div><div class="absolute -top-16 -right-16 w-[420px] h-[420px] bg-[#3B82F6]/15 rounded-full blur-[90px] pointer-events-none"></div><div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/30 to-transparent pointer-events-none"></div><div class="mx-auto max-w-[1400px] px-4 md:px-8 py-8 md:py-12 relative w-full"><div class="max-w-4xl"><h1 class="text-[42px] md:text-[84px] lg:text-[96px] font-black leading-[0.85] tracking-[-0.05em]"><span class="block text-white">AYKA</span><span class="block text-[#3B82F6] neon-text tracking-[-0.03em]">STORE</span></h1><p class="mt-3 md:mt-4 text-[13px] md:text-[16px] text-[#888] font-medium tracking-[0.02em] max-w-xl leading-relaxed">Built in Cairo, worn everywhere.</p><div class="mt-5 md:mt-6 flex gap-2.5"><button class="bg-white text-black px-5 py-2.5 md:px-6 md:py-2.5 rounded-full text-[11px] md:text-[12px] font-bold tracking-widest uppercase hover:bg-[#3B82F6] hover:text-white transition shadow-[0_0_24px_rgba(59,130,246,0.3)]">Shop Drops</button><div class="flex items-center gap-2 text-[10px] md:text-[11px] text-[#666] tracking-widest uppercase border border-[#222] rounded-full px-4 py-2 md:px-4 md:py-2.5"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> 27 Governorates • COD</div></div></div></div></section><section class="sticky top-[64px] z-30 bg-[#0a0a0b]/80 backdrop-blur border-b border-[#111] no-x" style="overflow-x: clip;"><div class="mx-auto max-w-[1400px] px-4 md:px-8 py-3 flex gap-2 overflow-auto" style="overflow-x: auto;"><button class="shrink-0 px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase border transition bg-[#3B82F6] border-[#3B82F6] text-white neon-border">All</button><button class="shrink-0 px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase border transition flex items-center gap-2 bg-[#111113] border-[#222] text-[#888] hover:text-white hover:border-[#333]"><span class="opacity-60">◩</span>Clothing</button><button class="shrink-0 px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase border transition flex items-center gap-2 bg-[#111113] border-[#222] text-[#888] hover:text-white hover:border-[#333]"><span class="opacity-60">◪</span>Shoes</button><button class="shrink-0 px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase border transition flex items-center gap-2 bg-[#111113] border-[#222] text-[#888] hover:text-white hover:border-[#333]"><span class="opacity-60">◧</span>Bags</button><button class="shrink-0 px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase border transition flex items-center gap-2 bg-[#111113] border-[#222] text-[#888] hover:text-white hover:border-[#333]"><span class="opacity-60">◈</span>Entertainment</button></div></section><main id="products" class="mx-auto max-w-[1400px] px-4 md:px-8 py-8 no-x" style="overflow-x: clip;"><div class="flex items-center justify-between mb-6"><p class="text-[11px] tracking-[0.3em] uppercase text-[#666]">12 PRODUCTS • All</p><p class="text-[11px] text-[#333] tracking-widest uppercase hidden md:block">Dark mode • AYKA v2</p></div><div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5"><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">🧥</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Clothing</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">15 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Oversized Hoodie - Obsidian</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Heavyweight 460gsm cotton, dropped shoulders, AYKA embroidered logo. Washed for extra softness, kangaroo pocket, ribbed cuffs. Model 185cm wearing L. Cold wash.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Grey" style="background: rgb(107, 114, 128);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>850 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">👖</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Clothing</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">30 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Cargo Pants Black Tactical</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">6-pocket ripstop, adjustable cuffs, YKK zippers. Water-resistant coating, reinforced knees. Relaxed fit, inspired by Cairo utility wear.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Olive" style="background: rgb(85, 107, 47);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Grey" style="background: rgb(107, 114, 128);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>720 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">👕</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Clothing</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">15 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Graphic Tee "AYKA VOID"</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">100% organic cotton, blue neon screen print that glows under UV. Oversized box fit, 240gsm. Limited drop, each piece numbered.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="White" style="background: rgb(255, 255, 255);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>350 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">👟</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Shoes</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">36 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Air Max Pulse - Frost</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Limited pulse unit, reflective details. Breathable mesh upper, Max Air cushioning. Frost blue midsole glow. True to size.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="White" style="background: rgb(255, 255, 255);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Grey" style="background: rgb(107, 114, 128);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>2200 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">🥾</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Shoes</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">36 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Chunky Sneakers V2</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">EVA midsole, suede + mesh, street ready. Chunky AYKA signature sole, 4cm platform. Hand-finished stitching, custom blue laces.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="White" style="background: rgb(255, 255, 255);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>1850 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">👢</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Shoes</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">24 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Leather Chelsea Boots</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Full-grain leather, sold out restock soon. Elastic side panels, leather sole with rubber grip. Handcrafted.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Brown" style="background: rgb(120, 53, 15);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>1650 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">🎒</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Bags</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">6 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Leather Backpack Pro</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Water-resistant, laptop 16". Hidden anti-theft pocket, padded straps, AYKA metal logo. 45x30x15cm.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Olive" style="background: rgb(85, 107, 47);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>1250 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">👜</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Bags</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">15 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Crossbody Sling - Stealth</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Cordura, quick access, blue stitch detail. Adjustable strap, RFID blocking pocket. Urban tactical, 280g.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Grey" style="background: rgb(107, 114, 128);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>480 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">🧳</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Bags</span></div><div class="absolute top-3 right-3"><span class="bg-amber-500 text-black text-[10px] font-bold px-2.5 py-1 rounded-full">LOW 4</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Duffle Gym Bag 40L</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Ventilated shoe compartment, AYKA rubber patch. Separate wet pocket, trolley sleeve, reinforced base. 40L holds 3-day trip.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Grey" style="background: rgb(107, 114, 128);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>890 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">💡</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Entertainment</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">8 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">LED Gaming Light Bars</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Music sync, app control, 16M colors. USB-C powered, mic sync, mount anywhere. Blue AYKA preset included. Set of 2.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="White" style="background: rgb(255, 255, 255);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>650 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">🎮</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Entertainment</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">6 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Wireless Controller - Phantom</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Hall effect sticks, 20h battery. AYKA blue triggers, low latency 1ms. Compatible PS/PC/Switch. Includes case.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Blue" style="background: rgb(59, 130, 246);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="White" style="background: rgb(255, 255, 255);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>1100 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div><div class="group bg-[#111113] border border-[#1a1a1d] rounded-[20px] overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] transition-all duration-300 flex flex-col cursor-pointer"><div class="relative aspect-[1/1] bg-[#0e0e10] flex items-center justify-center overflow-hidden"><span class="text-[64px] group-hover:scale-110 transition-transform duration-500">📻</span><div class="absolute top-3 left-3 flex gap-1.5"><span class="bg-[#0a0a0b]/80 backdrop-blur border border-[#222] text-[10px] px-2.5 py-1 rounded-full tracking-widest uppercase text-[#aaa]">Entertainment</span></div><div class="absolute top-3 right-3"><span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full">6 LEFT</span></div><div class="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#3B82F6]/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div></div><div class="p-4 flex flex-col flex-1"><h3 class="text-[13px] font-bold leading-tight line-clamp-2 min-h-[32px]">Vinyl Player Mini - Retro</h3><p class="text-[11px] text-[#666] mt-1 line-clamp-1">Bluetooth speaker built-in, blue neon needle light. Plays 7" vinyls, aux in, rechargeable. Retro wood finish.</p><div class="mt-2 flex gap-1"><span class="w-3 h-3 rounded-full border border-[#222]" title="Brown" style="background: rgb(120, 53, 15);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Black" style="background: rgb(10, 10, 10);"></span><span class="w-3 h-3 rounded-full border border-[#222]" title="Beige" style="background: rgb(214, 199, 184);"></span></div><div class="mt-3 flex items-center justify-between"><span class="text-[16px] font-black tracking-tight"><span>1750 EGP</span></span><button class="px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase transition bg-white text-black hover:bg-[#3B82F6] hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">Sizes • Colors</button></div></div></div></div></main><footer class="border-t border-[#111] mt-10 py-10 no-x relative" style="overflow-x: clip;"><div class="mx-auto max-w-[1400px] px-4 md:px-8 flex flex-col items-center text-center gap-4"><p class="text-[22px] font-black tracking-[0.3em]">AYKA<span class="text-[#3B82F6]">.</span></p><div class="text-[11px] text-[#999] space-y-2"><p class="text-[#888] tracking-widest uppercase text-[10px]">Shipping</p><p class="text-[#aaa]">Cairo / Giza 50 EGP • Alexandria 70 EGP • Others 80-120 EGP</p><p class="text-[#666]">Shipping within 3-5 business days</p></div><div class="h-[1px] w-full max-w-[300px] bg-gradient-to-r from-transparent via-[#222] to-transparent my-2"></div><p class="text-[12px] text-[#777] tracking-wide">جميع الحقوق محفوظه AYKA STORE 2026 ©</p></div></footer><div class="hidden"><span id="ayka-internal">internal</span></div></div></div>
   
   <script type="module">var a0=Object.create;var{getPrototypeOf:c0,defineProperty:ai,getOwnPropertyNames:d0}=Object;var s0=Object.prototype.hasOwnProperty;var yn=(e,n,t)=>{t=e!=null?a0(c0(e)):{};let r=n||!e||!e.__esModule?ai(t,"default",{value:e,enumerable:!0}):t;for(let l of d0(e))if(!s0.call(r,l))ai(r,l,{get:()=>e[l],enumerable:!0});return r};var Ml=(e,n)=>()=>(n||e((n={exports:{}}).exports,n),n.exports);var p0=(e,n)=>{for(var t in n)ai(e,t,{get:n[t],enumerable:!0,configurable:!0,set:(r)=>n[t]=()=>r})};var h0=(e,n)=>()=>(e&&(n=e(e=0)),n);var tt=Ml((D0)=>{var mr=Symbol.for("react.element"),v0=Symbol.for("react.portal"),y0=Symbol.for("react.fragment"),m0=Symbol.for("react.strict_mode"),g0=Symbol.for("react.profiler"),w0=Symbol.for("react.provider"),k0=Symbol.for("react.context"),S0=Symbol.for("react.forward_ref"),E0=Symbol.for("react.suspense"),_0=Symbol.for("react.memo"),N0=Symbol.for("react.lazy"),qf=Symbol.iterator;function C0(e){if(e===null||typeof e!=="object")return null;return e=qf&&e[qf]||e["@@iterator"],typeof e==="function"?e:null}var bf={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},ea=Object.assign,na={};function Ct(e,n,t){this.props=e,this.context=n,this.refs=na,this.updater=t||bf}Ct.prototype.isReactComponent={};Ct.prototype.setState=function(e,n){if(typeof e!=="object"&&typeof e!=="function"&&e!=null)throw Error("setState(...): takes an object of state variables to update or a function which returns an object of state variables.");this.updater.enqueueSetState(this,e,n,"setState")};Ct.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,"forceUpdate")};function ta(){}ta.prototype=Ct.prototype;function di(e,n,t){this.props=e,this.context=n,this.refs=na,this.updater=t||bf}var si=di.prototype=new ta;si.constructor=di;ea(si,Ct.prototype);si.isPureReactComponent=!0;var xf=Array.isArray,ra=Object.prototype.hasOwnProperty,pi={current:null},la={key:!0,ref:!0,__self:!0,__source:!0};function ua(e,n,t){var r,l={},u=null,i=null;if(n!=null)for(r in n.ref!==void 0&&(i=n.ref),n.key!==void 0&&(u=""+n.key),n)ra.call(n,r)&&!la.hasOwnProperty(r)&&(l[r]=n[r]);var a=arguments.length-2;if(a===1)l.children=t;else if(1<a){for(var c=Array(a),h=0;h<a;h++)c[h]=arguments[h+2];l.children=c}if(e&&e.defaultProps)for(r in a=e.defaultProps,a)l[r]===void 0&&(l[r]=a[r]);return{$$typeof:mr,type:e,key:u,ref:i,props:l,_owner:pi.current}}function z0(e,n){return{$$typeof:mr,type:e.type,key:n,ref:e.ref,props:e.props,_owner:e._owner}}function hi(e){return typeof e==="object"&&e!==null&&e.$$typeof===mr}function T0(e){var n={"=":"=0",":":"=2"};return"$"+e.replace(/[=:]/g,function(t){return n[t]})}var jf=/\/+/g;function ci(e,n){return typeof e==="object"&&e!==null&&e.key!=null?T0(""+e.key):n.toString(36)}function Ul(e,n,t,r,l){var u=typeof e;if(u==="undefined"||u==="boolean")e=null;var i=!1;if(e===null)i=!0;else switch(u){case"string":case"number":i=!0;break;case"object":switch(e.$$typeof){case mr:case v0:i=!0}}if(i)return i=e,l=l(i),e=r===""?"."+ci(i,0):r,xf(l)?(t="",e!=null&&(t=e.replace(jf,"$&/")+"/"),Ul(l,n,t,"",function(h){return h})):l!=null&&(hi(l)&&(l=z0(l,t+(!l.key||i&&i.key===l.key?"":(""+l.key).replace(jf,"$&/")+"/")+e)),n.push(l)),1;if(i=0,r=r===""?".":r+":",xf(e))for(var a=0;a<e.length;a++){u=e[a];var c=r+ci(u,a);i+=Ul(u,n,t,c,l)}else if(c=C0(e),typeof c==="function")for(e=c.call(e),a=0;!(u=e.next()).done;)u=u.value,c=r+ci(u,a++),i+=Ul(u,n,t,c,l);else if(u==="object")throw n=String(e),Error("Objects are not valid as a React child (found: "+(n==="[object Object]"?"object with keys {"+Object.keys(e).join(", ")+"}":n)+"). If you meant to render a collection of children, use an array instead.");return i}function $l(e,n,t){if(e==null)return e;var r=[],l=0;return Ul(e,r,"","",function(u){return n.call(t,u,l++)}),r}function R0(e){if(e._status===-1){var n=e._result;n=n(),n.then(function(t){if(e._status===0||e._status===-1)e._status=1,e._result=t},function(t){if(e._status===0||e._status===-1)e._status=2,e._result=t}),e._status===-1&&(e._status=0,e._result=n)}if(e._status===1)return e._result.default;throw e._result}var Ne={current:null},Ll={transition:null},O0={ReactCurrentDispatcher:Ne,ReactCurrentBatchConfig:Ll,ReactCurrentOwner:pi};function ia(){throw Error("act(...) is not supported in production builds of React.")}D0.Children={map:$l,forEach:function(e,n,t){$l(e,function(){n.apply(this,arguments)},t)},count:function(e){var n=0;return $l(e,function(){n++}),n},toArray:function(e){return $l(e,function(n){return n})||[]},only:function(e){if(!hi(e))throw Error("React.Children.only expected to receive a single React element child.");return e}};D0.Component=Ct;D0.Fragment=y0;D0.Profiler=g0;D0.PureComponent=di;D0.StrictMode=m0;D0.Suspense=E0;D0.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED=O0;D0.act=ia;D0.cloneElement=function(e,n,t){if(e===null||e===void 0)throw Error("React.cloneElement(...): The argument must be a React element, but you passed "+e+".");var r=ea({},e.props),l=e.key,u=e.ref,i=e._owner;if(n!=null){if(n.ref!==void 0&&(u=n.ref,i=pi.current),n.key!==void 0&&(l=""+n.key),e.type&&e.type.defaultProps)var a=e.type.defaultProps;for(c in n)ra.call(n,c)&&!la.hasOwnProperty(c)&&(r[c]=n[c]===void 0&&a!==void 0?a[c]:n[c])}var c=arguments.length-2;if(c===1)r.children=t;else if(1<c){a=Array(c);for(var h=0;h<c;h++)a[h]=arguments[h+2];r.children=a}return{$$typeof:mr,type:e.type,key:l,ref:u,props:r,_owner:i}};D0.createContext=function(e){return e={$$typeof:k0,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null,_defaultValue:null,_globalName:null},e.Provider={$$typeof:w0,_context:e},e.Consumer=e};D0.createElement=ua;D0.createFactory=function(e){var n=ua.bind(null,e);return n.type=e,n};D0.createRef=function(){return{current:null}};D0.forwardRef=function(e){return{$$typeof:S0,render:e}};D0.isValidElement=hi;D0.lazy=function(e){return{$$typeof:N0,_payload:{_status:-1,_result:e},_init:R0}};D0.memo=function(e,n){return{$$typeof:_0,type:e,compare:n===void 0?null:n}};D0.startTransition=function(e){var n=Ll.transition;Ll.transition={};try{e()}finally{Ll.transition=n}};D0.unstable_act=ia;D0.useCallback=function(e,n){return Ne.current.useCallback(e,n)};D0.useContext=function(e){return Ne.current.useContext(e)};D0.useDebugValue=function(){};D0.useDeferredValue=function(e){return Ne.current.useDeferredValue(e)};D0.useEffect=function(e,n){return Ne.current.useEffect(e,n)};D0.useId=function(){return Ne.current.useId()};D0.useImperativeHandle=function(e,n,t){return Ne.current.useImperativeHandle(e,n,t)};D0.useInsertionEffect=function(e,n){return Ne.current.useInsertionEffect(e,n)};D0.useLayoutEffect=function(e,n){return Ne.current.useLayoutEffect(e,n)};D0.useMemo=function(e,n){return Ne.current.useMemo(e,n)};D0.useReducer=function(e,n,t){return Ne.current.useReducer(e,n,t)};D0.useRef=function(e){return Ne.current.useRef(e)};D0.useState=function(e){return Ne.current.useState(e)};D0.useSyncExternalStore=function(e,n,t){return Ne.current.useSyncExternalStore(e,n,t)};D0.useTransition=function(){return Ne.current.useTransition()};D0.version="18.3.1"});var pa=Ml((hp)=>{function yi(e,n){var t=e.length;e.push(n);e:for(;0<t;){var r=t-1>>>1,l=e[r];if(0<Wl(l,n))e[r]=n,e[t]=l,t=r;else break e}}function je(e){return e.length===0?null:e[0]}function Fl(e){if(e.length===0)return null;var n=e[0],t=e.pop();if(t!==n){e[0]=t;e:for(var r=0,l=e.length,u=l>>>1;r<u;){var i=2*(r+1)-1,a=e[i],c=i+1,h=e[c];if(0>Wl(a,t))c<l&&0>Wl(h,a)?(e[r]=h,e[c]=t,r=c):(e[r]=a,e[i]=t,r=i);else if(c<l&&0>Wl(h,t))e[r]=h,e[c]=t,r=c;else break e}}return n}function Wl(e,n){var t=e.sortIndex-n.sortIndex;return t!==0?t:e.id-n.id}if(typeof performance==="object"&&typeof performance.now==="function")mi=performance,hp.unstable_now=function(){return mi.now()};else Bl=Date,gi=Bl.now(),hp.unstable_now=function(){return Bl.now()-gi};var mi,Bl,gi,an=[],On=[],pp=1,Ke=null,me=3,Vl=!1,rt=!1,wr=!1,fa=typeof setTimeout==="function"?setTimeout:null,aa=typeof clearTimeout==="function"?clearTimeout:null,oa=typeof setImmediate<"u"?setImmediate:null;typeof navigator<"u"&&navigator.scheduling!==void 0&&navigator.scheduling.isInputPending!==void 0&&navigator.scheduling.isInputPending.bind(navigator.scheduling);function wi(e){for(var n=je(On);n!==null;){if(n.callback===null)Fl(On);else if(n.startTime<=e)Fl(On),n.sortIndex=n.expirationTime,yi(an,n);else break;n=je(On)}}function Si(e){if(wr=!1,wi(e),!rt)if(je(an)!==null)rt=!0,_i(Ei);else{var n=je(On);n!==null&&Ni(Si,n.startTime-e)}}function Ei(e,n){rt=!1,wr&&(wr=!1,aa(kr),kr=-1),Vl=!0;var t=me;try{wi(n);for(Ke=je(an);Ke!==null&&(!(Ke.expirationTime>n)||e&&!sa());){var r=Ke.callback;if(typeof r==="function"){Ke.callback=null,me=Ke.priorityLevel;var l=r(Ke.expirationTime<=n);n=hp.unstable_now(),typeof l==="function"?Ke.callback=l:Ke===je(an)&&Fl(an),wi(n)}else Fl(an);Ke=je(an)}if(Ke!==null)var u=!0;else{var i=je(On);i!==null&&Ni(Si,i.startTime-n),u=!1}return u}finally{Ke=null,me=t,Vl=!1}}var Kl=!1,Ql=null,kr=-1,ca=5,da=-1;function sa(){return hp.unstable_now()-da<ca?!1:!0}function vi(){if(Ql!==null){var e=hp.unstable_now();da=e;var n=!0;try{n=Ql(!0,e)}finally{n?gr():(Kl=!1,Ql=null)}}else Kl=!1}var gr;if(typeof oa==="function")gr=function(){oa(vi)};else if(typeof MessageChannel<"u")Hl=new MessageChannel,ki=Hl.port2,Hl.port1.onmessage=vi,gr=function(){ki.postMessage(null)};else gr=function(){fa(vi,0)};var Hl,ki;function _i(e){Ql=e,Kl||(Kl=!0,gr())}function Ni(e,n){kr=fa(function(){e(hp.unstable_now())},n)}hp.unstable_IdlePriority=5;hp.unstable_ImmediatePriority=1;hp.unstable_LowPriority=4;hp.unstable_NormalPriority=3;hp.unstable_Profiling=null;hp.unstable_UserBlockingPriority=2;hp.unstable_cancelCallback=function(e){e.callback=null};hp.unstable_continueExecution=function(){rt||Vl||(rt=!0,_i(Ei))};hp.unstable_forceFrameRate=function(e){0>e||125<e?console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"):ca=0<e?Math.floor(1000/e):5};hp.unstable_getCurrentPriorityLevel=function(){return me};hp.unstable_getFirstCallbackNode=function(){return je(an)};hp.unstable_next=function(e){switch(me){case 1:case 2:case 3:var n=3;break;default:n=me}var t=me;me=n;try{return e()}finally{me=t}};hp.unstable_pauseExecution=function(){};hp.unstable_requestPaint=function(){};hp.unstable_runWithPriority=function(e,n){switch(e){case 1:case 2:case 3:case 4:case 5:break;default:e=3}var t=me;me=e;try{return n()}finally{me=t}};hp.unstable_scheduleCallback=function(e,n,t){var r=hp.unstable_now();switch(typeof t==="object"&&t!==null?(t=t.delay,t=typeof t==="number"&&0<t?r+t:r):t=r,e){case 1:var l=-1;break;case 2:l=250;break;case 5:l=1073741823;break;case 4:l=1e4;break;default:l=5000}return l=t+l,e={id:pp++,callback:n,priorityLevel:e,startTime:t,expirationTime:l,sortIndex:-1},t>r?(e.sortIndex=t,yi(On,e),je(an)===null&&e===je(On)&&(wr?(aa(kr),kr=-1):wr=!0,Ni(Si,t-r))):(e.sortIndex=l,yi(an,e),rt||Vl||(rt=!0,_i(Ei))),e};hp.unstable_shouldYield=sa;hp.unstable_wrapCallback=function(e){var n=me;return function(){var t=me;me=n;try{return e.apply(this,arguments)}finally{me=t}}}});var Mf={};p0(Mf,{version:()=>Ts,unstable_renderSubtreeIntoContainer:()=>zs,unstable_batchedUpdates:()=>Cs,unmountComponentAtNode:()=>Ns,render:()=>_s,hydrateRoot:()=>Es,hydrate:()=>Ss,flushSync:()=>ks,findDOMNode:()=>ws,createRoot:()=>gs,createPortal:()=>ms,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:()=>ys});function _(e){for(var n="https://reactjs.org/docs/error-decoder.html?invariant="+e,t=1;t<arguments.length;t++)n+="&args[]="+encodeURIComponent(arguments[t]);return"Minified React error #"+e+"; visit "+n+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function mt(e,n){Zt(e,n),Zt(e+"Capture",n)}function Zt(e,n){Xr[e]=n;for(e=0;e<n.length;e++)wc.add(n[e])}function Up(e){if(Ai.call(va,e))return!0;if(Ai.call(ha,e))return!1;if($p.test(e))return va[e]=!0;return ha[e]=!0,!1}function Lp(e,n,t,r){if(t!==null&&t.type===0)return!1;switch(typeof n){case"function":case"symbol":return!0;case"boolean":if(r)return!1;if(t!==null)return!t.acceptsBooleans;return e=e.toLowerCase().slice(0,5),e!=="data-"&&e!=="aria-";default:return!1}}function Wp(e,n,t,r){if(n===null||typeof n>"u"||Lp(e,n,t,r))return!0;if(r)return!1;if(t!==null)switch(t.type){case 3:return!n;case 4:return n===!1;case 5:return isNaN(n);case 6:return isNaN(n)||1>n}return!1}function Te(e,n,t,r,l,u,i){this.acceptsBooleans=n===2||n===3||n===4,this.attributeName=r,this.attributeNamespace=l,this.mustUseProperty=t,this.propertyName=e,this.type=n,this.sanitizeURL=u,this.removeEmptyString=i}function Ko(e){return e[1].toUpperCase()}function Yo(e,n,t,r){var l=ye.hasOwnProperty(n)?ye[n]:null;if(l!==null?l.type!==0:r||!(2<n.length)||n[0]!=="o"&&n[0]!=="O"||n[1]!=="n"&&n[1]!=="N")Wp(n,t,l,r)&&(t=null),r||l===null?Up(n)&&(t===null?e.removeAttribute(n):e.setAttribute(n,""+t)):l.mustUseProperty?e[l.propertyName]=t===null?l.type===3?!1:"":t:(n=l.attributeName,r=l.attributeNamespace,t===null?e.removeAttribute(n):(l=l.type,t=l===3||l===4&&t===!0?"":""+t,r?e.setAttributeNS(r,n,t):e.setAttribute(n,t)))}function Sr(e){if(e===null||typeof e!=="object")return null;return e=ya&&e[ya]||e["@@iterator"],typeof e==="function"?e:null}function Rr(e){if(Ci===void 0)try{throw Error()}catch(t){var n=t.stack.trim().match(/\n( *(at )?)/);Ci=n&&n[1]||""}return`
 `+Ci+e}function Ti(e,n){if(!e||zi)return"";zi=!0;var t=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{if(n)if(n=function(){throw Error()},Object.defineProperty(n.prototype,"props",{set:function(){throw Error()}}),typeof Reflect==="object"&&Reflect.construct){try{Reflect.construct(n,[])}catch(h){var r=h}Reflect.construct(e,[],n)}else{try{n.call()}catch(h){r=h}e.call(n.prototype)}else{try{throw Error()}catch(h){r=h}e()}}catch(h){if(h&&r&&typeof h.stack==="string"){for(var l=h.stack.split(`
@@ -2861,251 +2848,180 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 
-<!-- AYKA FINAL V2 - DASHBOARD ALONE - 100% SEPARATED FROM STORE -->
+<!-- AYKA FINAL V2 - STORE ALONE - 100% SEPARATED - NO LOGO 5 CLICKS -->
 <script>
 (function(){
   const API = 'https://ayka-store.infinityfreeapp.com/api/api.php';
-  try{ localStorage.setItem('ayka_gas_url', API); }catch(e){}
+  try{ localStorage.setItem('ayka_gas_url', 'https://ayka-store.infinityfreeapp.com/api/api.php'); }catch(e){}
   
   const _fetch = window.fetch;
   window.fetch = function(input, init){
     let url = typeof input === 'string' ? input : input.url;
     if(url && url.includes('script.google.com')){
-      if(url.includes('getProducts') || url.includes('get_products')) {
+      if(url.includes('getProducts') || url.includes('get_products') || url.includes('action=get')) {
         return _fetch(API + '?action=get_products', init);
-      }
-      if(url.includes('getOrders') || url.includes('get_orders') || url.includes('getStats')) {
-        return _fetch(API + '?action=get_orders', init);
-      }
-      if(url.includes('saveProducts') || url.includes('addProduct') || url.includes('updateProduct') || url.includes('deleteProduct')) {
-        // Keep original method but redirect
-        let newUrl = API + '?action=save_products';
-        if(url.includes('addProduct')) newUrl = API + '?action=add_product';
-        if(url.includes('updateProduct')) newUrl = API + '?action=update_product';
-        if(url.includes('deleteProduct')) newUrl = API + '?action=delete_product';
-        if(url.includes('saveProducts')) newUrl = API + '?action=save_products';
-        return _fetch(newUrl, init);
       }
       return _fetch(API + '?action=get_products', init);
     }
     return _fetch(input, init);
   };
   
-  // === DASHBOARD ALONE - 100% SEPARATED ===
-  function makeDashboardAlone(){
-    // 1. Inject CSS to hide store completely, show only dashboard fullscreen
-    let style = document.getElementById('dashboard-alone-style');
-    if(!style){
-      style = document.createElement('style');
-      style.id = 'dashboard-alone-style';
-      style.textContent = `
-        /* Hide store UI completely */
-        body > header, body > section, body > main, body > footer, #products, #adminDot {
-          display: none !important;
-        }
-        /* But show dashboard modals - they are fixed inset-0 */
-        body {
-          background: #0a0a0b !important;
-          overflow: auto !important;
-        }
-        /* Force dashboard to be visible fullscreen and alone */
-        div[class*="fixed"][class*="inset-0"] {
-          display: flex !important;
-          position: fixed !important;
-          inset: 0 !important;
-          z-index: 9999 !important;
-          background: #0a0a0b !important;
-          opacity: 1 !important;
-          visibility: visible !important;
-          pointer-events: auto !important;
-        }
-        /* Make dashboard content scrollable and centered */
-        div[class*="fixed"][class*="inset-0"] > div {
-          max-height: 100vh;
-          overflow-y: auto;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    // 2. Auto click admin dot to open dashboard if not open
+  // === DISABLE ALL DASHBOARD TRIGGERS ===
+  function disableDashboardTriggers(){
+    // 1. Remove adminDot
     let dot = document.getElementById('adminDot');
-    if(dot && !window._dashOpened){
-      dot.style.display = 'block';
-      dot.style.width = '40px';
-      dot.style.height = '40px';
-      dot.style.background = '#3B82F6';
-      dot.style.borderRadius = '50%';
-      dot.style.position = 'fixed';
-      dot.style.bottom = '20px';
-      dot.style.right = '20px';
-      dot.style.zIndex = '10000';
-      dot.style.cursor = 'pointer';
-      dot.style.boxShadow = '0 0 20px #3B82F6';
-      dot.click();
-      window._dashOpened = true;
-      console.log('Dashboard auto-opened');
-      
-      // After opening, hide the dot itself (since we are already in dashboard alone mode)
-      setTimeout(()=>{
-        if(document.querySelector('div[class*="fixed"][class*="inset-0"]')){
-          dot.style.display = 'none';
-        }
-      }, 1000);
-    }
+    if(dot){ dot.remove(); }
     
-    // 3. If dashboard is open, ensure store is hidden
-    let dashboardModal = document.querySelector('div[class*="fixed"][class*="inset-0"]');
-    if(dashboardModal){
-      // Remove any store elements that might be inside body
-      document.body.style.background = '#0a0a0b';
-    }
-  }
-  
-  function setupDashboardAlone(){
-    let attempts = 0;
-    let interval = setInterval(()=>{
-      attempts++;
-      makeDashboardAlone();
-      if(attempts > 30) clearInterval(interval);
-    }, 400);
+    // 2. Disable logo 5 clicks - find logo and clone to remove listeners
+    // Logo has glitch class and text AYKA
+    document.querySelectorAll('*').forEach(el => {
+      if(el.textContent && el.textContent.trim() === 'AYKA' && el.classList.contains('glitch')){
+        // Clone to remove all event listeners
+        let parent = el.parentElement;
+        if(parent){
+          let clone = el.cloneNode(true);
+          // Remove any data attributes that count clicks
+          clone.removeAttribute('data-clicks');
+          clone.style.pointerEvents = 'none'; // make logo not clickable for dashboard
+          // But keep parent clickable for home?
+          // We want logo to not open dashboard, so disable pointer events on logo itself
+          // Keep visual but no click opens dashboard
+          parent.replaceChild(clone, el);
+          // Also disable parent if it had click handler for dashboard
+          let parentClone = parent.cloneNode(true);
+          // Re-add logo clone inside parent clone
+          parentClone.innerHTML = '';
+          parentClone.appendChild(clone);
+          // Keep only navigation, no dashboard trigger
+          parentClone.style.cursor = 'default';
+          parent.parentElement.replaceChild(parentClone, parent);
+        }
+      }
+    });
+    
+    // 3. Override localStorage click counter that opens dashboard
+    try{
+      localStorage.removeItem('ayka_logo_clicks');
+      localStorage.removeItem('logoClicks');
+      localStorage.removeItem('admin_clicks');
+    }catch(e){}
+    
+    // 4. Block any attempt to open dashboard by overriding functions
+    window.openAdmin = function(){ return false; };
+    window.openDashboard = function(){ return false; };
+    window.showAdmin = function(){ return false; };
+    window.showDashboard = function(){ return false; };
+    
+    // 5. Intercept all clicks - if black screen tries to appear, prevent it
+    document.addEventListener('click', function(e){
+      // If click target is logo area, stop propagation
+      let target = e.target;
+      if(target && (target.textContent === 'AYKA' || target.closest && target.closest('[class*="glitch"]'))){
+        e.stopImmediatePropagation();
+        // Allow navigation to home but not dashboard
+        if(e.detail >= 5){ // 5 clicks detection
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('AYKA Store Alone: Logo 5-clicks disabled');
+          return false;
+        }
+      }
+    }, true);
+    
+    // 6. Hide any dashboard modal if it somehow appears
+    const observer = new MutationObserver((mutations)=>{
+      mutations.forEach(m=>{
+        m.addedNodes.forEach(node=>{
+          if(node.nodeType === 1){
+            let el = node;
+            // If it's a fixed inset overlay that is black screen (dashboard)
+            if(el.classList && (el.className.includes('fixed') && el.className.includes('inset-0') && el.className.includes('z-'))){
+              // Check if it contains dashboard text
+              if(el.textContent && (el.textContent.includes('DASHBOARD') || el.textContent.includes('Total Products') || el.textContent.includes('Orders'))){
+                console.log('Blocked dashboard overlay in store alone');
+                el.remove();
+              }
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.body, {childList:true, subtree:true});
   }
   
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', setupDashboardAlone);
+    document.addEventListener('DOMContentLoaded', disableDashboardTriggers);
   } else {
-    setupDashboardAlone();
+    disableDashboardTriggers();
   }
-  setTimeout(setupDashboardAlone, 1000);
+  setTimeout(disableDashboardTriggers, 500);
+  setTimeout(disableDashboardTriggers, 1500);
+  setInterval(disableDashboardTriggers, 3000);
   
-  // Also watch for dashboard closing - reopen it to stay in dashboard alone mode
-  const observer = new MutationObserver(()=>{
-    let dashboardModal = document.querySelector('div[class*="fixed"][class*="inset-0"]');
-    if(!dashboardModal && window._dashOpened){
-      // Dashboard was closed, reopen it
-      let dot = document.getElementById('adminDot');
-      if(dot){
-        dot.click();
-      }
-    }
-  });
-  setTimeout(()=>{
-    observer.observe(document.body, {childList:true});
-  }, 2000);
-  
-  console.log('AYKA DASHBOARD ALONE V2 - 100% Separated from Store - Old Design 100% - Global Sync Kept');
+  console.log('AYKA STORE ALONE V2 - 100% Separated - Logo 5 clicks DISABLED - Old Design 100%');
 })();
 </script>
 
 
-<!-- AYKA UPLOAD HELPER - Real Image Upload to /uploads/ -->
+<!-- AYKA STORE - Real Image Display -->
 <script>
 (function(){
-  // Helper to upload image
-  window.aykaUploadImage = async function(file){
-    const formData = new FormData();
-    formData.append('image', file);
-    try{
-      let res = await fetch('https://ayka-store.infinityfreeapp.com/api/api.php?action=upload_image', {
-        method: 'POST',
-        body: formData
-      });
-      let data = await res.json();
-      if(data.success){
-        console.log('Image uploaded:', data.path);
-        return data.path; // uploads/xxx.jpg
-      }
-    }catch(e){
-      console.error('Upload failed', e);
-    }
-    return null;
-  };
-  
-  // Patch product creation to use real images
-  // Intercept when user adds product - if they selected files, upload them first
-  document.addEventListener('DOMContentLoaded', ()=>{
-    // Create floating upload helper for dashboard
-    let helperDiv = document.createElement('div');
-    helperDiv.id = 'ayka-upload-helper';
-    helperDiv.innerHTML = `
-      <div style="position:fixed; bottom:20px; left:20px; background:#111113; border:1px solid #222; border-radius:16px; padding:16px; z-index:10001; max-width:320px; display:none;" id="uploadHelperBox">
-        <p style="font-size:12px; font-weight:bold; margin-bottom:8px; letter-spacing:0.1em;">📸 REAL IMAGE UPLOAD - /uploads/</p>
-        <p style="font-size:10px; color:#888; margin-bottom:12px;">الصور هتتحفظ كملفات حقيقية خفيفة مش كود طويل</p>
-        <input type="file" id="realImageInput" accept="image/*" multiple style="width:100%; font-size:11px; margin-bottom:8px;">
-        <div id="uploadPreview" style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;"></div>
-        <p id="uploadStatus" style="font-size:10px; color:#3B82F6;"></p>
-        <button onclick="document.getElementById('uploadHelperBox').style.display='none'" style="width:100%; background:#222; border:none; border-radius:8px; padding:6px; font-size:11px; margin-top:8px;">Close</button>
-      </div>
-      <button onclick="document.getElementById('uploadHelperBox').style.display = document.getElementById('uploadHelperBox').style.display==='none' ? 'block' : 'none'" style="position:fixed; bottom:20px; left:20px; background:#3B82F6; color:white; border:none; border-radius:50%; width:56px; height:56px; z-index:10000; font-size:24px; box-shadow:0 0 20px rgba(59,130,246,0.5); cursor:pointer;">📸</button>
-    `;
-    document.body.appendChild(helperDiv);
-    
-    let uploadedPaths = [];
-    let input = document.getElementById('realImageInput');
-    let preview = document.getElementById('uploadPreview');
-    let status = document.getElementById('uploadStatus');
-    
-    if(input){
-      input.addEventListener('change', async (e)=>{
-        let files = Array.from(e.target.files);
-        if(!files.length) return;
-        status.textContent = 'Uploading ' + files.length + ' images...';
-        preview.innerHTML = '';
-        uploadedPaths = [];
-        
-        for(let file of files){
-          status.textContent = 'Uploading ' + file.name + '...';
-          let path = await window.aykaUploadImage(file);
-          if(path){
-            uploadedPaths.push(path);
-            let img = document.createElement('img');
-            img.src = '../' + path;
-            img.style.width = '48px';
-            img.style.height = '48px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '8px';
-            img.style.border = '1px solid #222';
-            preview.appendChild(img);
-          }
+  // Override product rendering to show real image if exists
+  function enhanceProductImages(){
+    // Find product cards and replace emoji with real image if mainImage exists
+    // This runs after React renders
+    const observer = new MutationObserver(()=>{
+      document.querySelectorAll('[class*="rounded-[20px]"]').forEach(card=>{
+        // Try to find if this card has product data with image
+        // We check if there's an emoji span that is actually an image path
+        let emojiEl = card.querySelector('span.text-\[64px\], div > span:first-child');
+        if(emojiEl && emojiEl.textContent && emojiEl.textContent.includes('uploads/')){
+          let path = emojiEl.textContent.trim();
+          // Replace with img
+          let img = document.createElement('img');
+          img.src = path.startsWith('uploads/') ? path : './' + path;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          emojiEl.replaceWith(img);
         }
-        status.textContent = '✓ Uploaded ' + uploadedPaths.length + ' images - Paths: ' + uploadedPaths.join(', ');
-        // Copy paths to clipboard for easy paste
-        try{
-          await navigator.clipboard.writeText(uploadedPaths.join('\n'));
-          status.textContent += ' (Copied!)';
-        }catch{}
       });
-    }
-    
-    // Also hook into existing product form - when product is saved, if we have uploaded images, inject them
-    // We override the save function to include real images
-    let originalFetch = window.fetch;
-    window.fetch = function(input, init){
-      let url = typeof input === 'string' ? input : input.url;
-      if(url && url.includes('script.google.com') && init && init.body){
-        try{
-          let body = JSON.parse(init.body);
-          // If this is a product save and we have uploaded images, replace emoji with real image
-          if(body && (body.emoji || body.name) && uploadedPaths.length > 0){
-            // If no real image, use first uploaded as mainImage
-            if(!body.mainImage){
-              body.mainImage = uploadedPaths[0];
-              body.images = uploadedPaths;
-              // Keep emoji as fallback but main will be real image
-              console.log('Injecting real images into product:', body.mainImage);
-            }
-          }
-          init.body = JSON.stringify(body);
-        }catch{}
-      }
-      return originalFetch(input, init);
-    };
-  });
+    });
+    observer.observe(document.body, {childList:true, subtree:true});
+  }
+  
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', enhanceProductImages);
+  } else {
+    enhanceProductImages();
+  }
 })();
 </script>
 
 
-<!-- AYKA DASHBOARD GLOBAL FIX V2 -->
+<!-- AYKA RESTORED - Second FormSubmit to kareemmudiii@gmail.com (3 i's) -->
+<script>
+(function(){
+  // When order is created, also send to second email via FormSubmit
+  const _fetch = window.fetch;
+  window.fetch = function(input, init){
+    let url = typeof input === 'string' ? input : input.url;
+    // If frontend already sends to FormSubmit 2i, also send to 3i
+    if(url && url.includes('formsubmit.co/Kareemmudii@gmail.com')){
+      // Duplicate to 3i version
+      let url3 = url.replace('Kareemmudii@gmail.com', 'kareemmudiii@gmail.com');
+      // Send to both
+      _fetch(url3, init).catch(()=>{});
+    }
+    // If backend creates order, also trigger FormSubmit to 3i via PHP already does, but keep frontend backup
+    return _fetch(input, init);
+  };
+  console.log('AYKA Emails Restored: FormSubmit 2i + 3i + PHP mail to both');
+})();
+</script>
+
+
+<!-- AYKA GLOBAL FIX V2 - Force orders/products to API -->
 <script>
 (function(){
   const API = 'https://ayka-store.infinityfreeapp.com/api/api.php';
@@ -3194,15 +3110,133 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 })();
 </script>
 
+
+<!-- AYKA GLOBAL V3 - STORE - If you see this banner, new file is live -->
+<div id="ayka-v3-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ GLOBAL V3 LIVE - API: https://ayka-store.infinityfreeapp.com/api/api.php - <span id="ayka-v3-status" style="color: rgb(255, 0, 0);">API FAILED ❌ Load failed</span> | Orders: <span id="ayka-v3-orders">-</span> | Products: <span id="ayka-v3-products">-</span></div>
+<div style="height:28px;"></div>
+<script>
+(function(){
+  const API = 'https://ayka-store.infinityfreeapp.com/api/api.php';
+  const bannerStatus = document.getElementById('ayka-v3-status');
+  const bannerOrders = document.getElementById('ayka-v3-orders');
+  const bannerProducts = document.getElementById('ayka-v3-products');
+  function setStatus(t, color){
+    if(bannerStatus){ bannerStatus.textContent = t; bannerStatus.style.color = color || '#000'; }
+  }
+  // 1. Clear old local products that cause 12 vs 5 confusion - but keep after API loads
+  // 2. Poll API every 3 seconds for orders/products - this is what makes Global work
+  let lastOrdersJson = '';
+  let lastProductsJson = '';
+  let pollCount = 0;
+  async function pollAPI(){
+    pollCount++;
+    try{
+      // Products
+      let pr = await fetch(API + '?action=get_products&ts=' + Date.now());
+      let products = await pr.json();
+      if(Array.isArray(products)){
+        if(bannerProducts) bannerProducts.textContent = products.length;
+        let pj = JSON.stringify(products);
+        if(pj !== lastProductsJson){
+          lastProductsJson = pj;
+          try{ localStorage.setItem('ayka_products', pj); localStorage.setItem('ayka_v2_products', pj); }catch(e){}
+          // If React already loaded with old 12 products, force reload once to show 5
+          if(pollCount === 1 && products.length === 5){
+            // Check if current page shows 12 - reload to fix
+            setTimeout(()=>{ if(!sessionStorage.getItem('ayka_v3_products_fixed')){ sessionStorage.setItem('ayka_v3_products_fixed','1'); location.reload(); } }, 800);
+          }
+        }
+        setStatus('API CONNECTED ✅', '#000');
+      }
+      // Orders - CRITICAL
+      let orr = await fetch(API + '?action=get_orders&ts=' + Date.now());
+      let orders = await orr.json();
+      let arr = Array.isArray(orders) ? orders : (orders.orders || []);
+      if(Array.isArray(arr)){
+        if(bannerOrders) bannerOrders.textContent = arr.length;
+        let oj = JSON.stringify(arr);
+        if(oj !== lastOrdersJson){
+          let isFirst = lastOrdersJson === '';
+          lastOrdersJson = oj;
+          try{
+            localStorage.setItem('ayka_orders', oj);
+            localStorage.setItem('ayka_orders_backup', oj);
+            localStorage.setItem('ayka_v2_orders', oj);
+            localStorage.setItem('ayka_orders_v2', oj);
+          }catch(e){}
+          // If new order arrived after first poll, reload dashboard to show it
+          if(!isFirst){
+            console.log('AYKA V3: New order detected, reloading to show it');
+            setTimeout(()=>location.reload(), 500);
+          }
+        }
+      }
+    }catch(e){
+      setStatus('API FAILED ❌ ' + e.message, '#ff0000');
+      console.log('AYKA V3 poll failed', e);
+    }
+  }
+  // Poll immediately and every 3 sec
+  pollAPI();
+  setInterval(pollAPI, 3000);
+
+  // 3. Intercept order creation - force to API
+  const _origFetch = window.fetch;
+  window.fetch = function(input, init){
+    let url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    // Fix old GAS call: POST with {order: ...} and no action -> add action
+    if(url && url.includes('ayka-store.infinityfreeapp.com/api/api.php')){
+      if(url.includes('action=getOrders')) url = url.replace('action=getOrders','action=get_orders');
+      if(url.includes('action=getProducts')) url = url.replace('action=getProducts','action=get_products');
+      if(init && init.method === 'POST' && init.body && typeof init.body === 'string' && init.body.includes('"order"') && !url.includes('action=')){
+        url = url + '?action=create_order';
+        if(init.mode === 'no-cors') init = {...init, mode: 'cors'};
+        console.log('AYKA V3: Rewriting order POST to', url);
+      }
+      if(init && init.mode === 'no-cors'){
+        init = {...init, mode: 'cors'};
+      }
+      // Add cache buster for GET
+      if(!init || init.method === 'GET' || !init.method){
+        if(!url.includes('ts=')) url += (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+      }
+      return _origFetch(url, init);
+    }
+    if(url && url.includes('script.google.com')){
+      return _origFetch(API + '?action=get_products&ts=' + Date.now(), init);
+    }
+    return _origFetch(url, init);
+  };
+  // 4. Also watch localStorage for new orders - if React saves order locally, push to API
+  const _setItem = Storage.prototype.setItem;
+  let sentIds = new Set();
+  Storage.prototype.setItem = function(key, value){
+    _setItem.call(this, key, value);
+    if(key === 'ayka_orders' || key === 'ayka_orders_backup'){
+      try{
+        let orders = JSON.parse(value);
+        if(Array.isArray(orders) && orders.length > 0){
+          let latest = orders[0];
+          if(latest && latest.id && !sentIds.has(latest.id)){
+            sentIds.add(latest.id);
+            console.log('AYKA V3: Local order detected, pushing to API', latest.id);
+            _origFetch(API + '?action=create_order', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({order: latest})
+            }).then(r=>r.json()).then(d=>{
+              console.log('AYKA V3: Order saved to API', d);
+              // Immediately poll to update banner
+              pollAPI();
+            }).catch(e=>console.log('AYKA V3: Push failed', e));
+          }
+        }
+      }catch(e){}
+    }
+  };
+  console.log('AYKA GLOBAL V3 ACTIVE');
+})();
+</script>
+
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
-<div id="ayka-upload-helper">
-      <div style="position:fixed; bottom:20px; left:20px; background:#111113; border:1px solid #222; border-radius:16px; padding:16px; z-index:10001; max-width:320px; display:none;" id="uploadHelperBox">
-        <p style="font-size:12px; font-weight:bold; margin-bottom:8px; letter-spacing:0.1em;">📸 REAL IMAGE UPLOAD - /uploads/</p>
-        <p style="font-size:10px; color:#888; margin-bottom:12px;">الصور هتتحفظ كملفات حقيقية خفيفة مش كود طويل</p>
-        <input type="file" id="realImageInput" accept="image/*" multiple="" style="width:100%; font-size:11px; margin-bottom:8px;">
-        <div id="uploadPreview" style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;"></div>
-        <p id="uploadStatus" style="font-size:10px; color:#3B82F6;"></p>
-        <button onclick="document.getElementById('uploadHelperBox').style.display='none'" style="width:100%; background:#222; border:none; border-radius:8px; padding:6px; font-size:11px; margin-top:8px;">Close</button>
-      </div>
-      <button onclick="document.getElementById('uploadHelperBox').style.display = document.getElementById('uploadHelperBox').style.display==='none' ? 'block' : 'none'" style="position:fixed; bottom:20px; left:20px; background:#3B82F6; color:white; border:none; border-radius:50%; width:56px; height:56px; z-index:10000; font-size:24px; box-shadow:0 0 20px rgba(59,130,246,0.5); cursor:pointer;">📸</button>
-    </div></body></html>
+</body></html>
