@@ -3105,37 +3105,92 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 </script>
 
 
-<!-- AYKA FIX - Force API, ignore old localStorage -->
+<!-- AYKA DASHBOARD GLOBAL FIX V2 -->
 <script>
 (function(){
   const API = 'https://ayka-store.infinityfreeapp.com/api/api.php';
-  // Clear old localStorage that has 13 products incl Hoodie Test
+  // Clear old localStorage that blocks sync
   try{
-    // Keep language only, clear products/orders
     let lang = localStorage.getItem('ayka_lang');
+    // Keep lang, clear old products/orders that were local-only
     localStorage.removeItem('ayka_products');
     localStorage.removeItem('ayka_v2_products');
-    localStorage.removeItem('ayka_orders');
-    localStorage.removeItem('ayka_orders_backup');
+    // Do NOT clear orders here - dashboard needs to fetch fresh from API
     if(lang) localStorage.setItem('ayka_lang', lang);
-    console.log('AYKA: Cleared old localStorage - now using API only');
   }catch(e){}
-  // Force fetch products from API on load and overwrite localStorage
-  fetch(API + '?action=get_products').then(r=>r.json()).then(products=>{
-    if(Array.isArray(products) && products.length>0){
-      try{
-        localStorage.setItem('ayka_products', JSON.stringify(products));
-        localStorage.setItem('ayka_v2_products', JSON.stringify(products));
-        console.log('AYKA: Loaded', products.length, 'products from API - should be 5, not 13');
-      }catch(e){}
-      // Reload once if current products count != API count
-      // Check if page already rendered with old data - reload to show API data
-      if(!sessionStorage.getItem('ayka_api_reloaded')){
-        sessionStorage.setItem('ayka_api_reloaded','1');
-        setTimeout(()=>location.reload(), 500);
+  const _origFetch = window.fetch;
+  window.fetch = function(input, init){
+    let url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    let body = init && init.body ? init.body : null;
+    // If POST to API with no action but body has {order:...} -> add ?action=create_order
+    if(url && url.includes('ayka-store.infinityfreeapp.com/api/api.php')){
+      // Normalize getOrders/getProducts case
+      if(url.includes('action=getOrders')) url = url.replace('action=getOrders','action=get_orders');
+      if(url.includes('action=getProducts')) url = url.replace('action=getProducts','action=get_products');
+      if(url.includes('action=get_orders') || url.includes('action=get_products')){
+        // GET is fine
+        return _origFetch(url, init);
+      }
+      // POST with order but no action
+      if(init && init.method === 'POST' && body && typeof body === 'string' && body.includes('"order"') && !url.includes('action=')){
+        url = url + '?action=create_order';
+        // Remove no-cors so server can read body - must use cors
+        if(init.mode === 'no-cors') init = {...init, mode: 'cors'};
+        console.log('AYKA FIX: Rewriting order POST to', url);
+        return _origFetch(url, init);
+      }
+      // POST with order but with no-cors - fix mode
+      if(init && init.method === 'POST' && init.mode === 'no-cors'){
+        init = {...init, mode: 'cors'};
       }
     }
-  }).catch(e=>console.log('AYKA API fetch failed', e));
+    // If fetch to script.google.com -> redirect to API
+    if(url && url.includes('script.google.com')){
+      return _origFetch(API + '?action=get_products', init);
+    }
+    return _origFetch(url, init);
+  };
+  // Also intercept localStorage set for orders - ALSO send to API immediately
+  const _setItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function(key, value){
+    _setItem.call(this, key, value);
+    if(key === 'ayka_orders' || key === 'ayka_orders_backup'){
+      try{
+        let orders = JSON.parse(value);
+        if(Array.isArray(orders) && orders.length > 0){
+          let latest = orders[0];
+          // Only send if it looks like a new order with AYKA- id and not yet sent
+          if(latest && latest.id && latest.id.toString().startsWith('AYKA-') && !latest._sentToAPI){
+            latest._sentToAPI = true;
+            console.log('AYKA FIX: Intercepted localStorage order, sending to API', latest.id);
+            _origFetch(API + '?action=create_order', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({order: latest})
+            }).then(r=>r.json()).then(d=>console.log('AYKA FIX: Order saved to API', d)).catch(e=>console.log('AYKA FIX: Order send failed', e));
+          }
+        }
+      }catch(e){}
+    }
+  };
+  // On load, fetch fresh products & orders from API and overwrite localStorage
+  fetch(API + '?action=get_products').then(r=>r.json()).then(products=>{
+    if(Array.isArray(products) && products.length>0){
+      try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
+      // Reload once to show API products (not old 13)
+      if(!sessionStorage.getItem('ayka_api_v2_reloaded')){
+        sessionStorage.setItem('ayka_api_v2_reloaded','1');
+        setTimeout(()=>location.reload(), 400);
+      }
+    }
+  }).catch(()=>{});
+  fetch(API + '?action=get_orders').then(r=>r.json()).then(orders=>{
+    let arr = Array.isArray(orders) ? orders : (orders.orders || []);
+    if(Array.isArray(arr)){
+      try{ localStorage.setItem('ayka_orders', JSON.stringify(arr)); }catch(e){}
+    }
+  }).catch(()=>{});
+  console.log('AYKA GLOBAL FIX V2 active - Orders now go to API');
 })();
 </script>
 
