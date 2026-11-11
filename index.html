@@ -3198,226 +3198,144 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 
-<!-- AYKA FIREBASE V6 - DASHBOARD - NO MORE InfinityFree / PHP -->
-<div id="ayka-v4-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#f59e0b; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">🔥 FIREBASE V6 LIVE - ALL SYNC + LIGHT IMAGES - <span id="ayka-v4-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v4-orders">-</span> | Products: <span id="ayka-v4-products">-</span></div>
+
+<!-- AYKA FIREBASE V7 - FIX DUPLICATE - Order by ID, no loop -->
+<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIREBASE V7 LIVE - FIX DUPLICATE - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
 <div style="height:28px;"></div>
 <script>
 (function(){
-  // ==== حط لينك Firebase بتاعك هنا ====
-  // مثال: https://ayka-store-12345-default-rtdb.firebaseio.com
-  // من غير / في الآخر
-  const FIREBASE_URL = 'https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
-  const bannerStatus = document.getElementById('ayka-v4-status');
-  const bannerOrders = document.getElementById('ayka-v4-orders');
-  const bannerProducts = document.getElementById('ayka-v4-products');
-  function setStatus(t){ if(bannerStatus) bannerStatus.textContent = t; }
-
-  // لو لسه محطتش اللينك الحقيقي، وقف ونبه
-  if(FIREBASE_URL.includes('AYKA-FIREBASE-URL-HERE')){
-    setStatus('⚠️ حط لينك Firebase بتاعك في الملف - شوف الشرح');
-    return;
+  const FB = 'https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
+  const statusEl = document.getElementById('ayka-v7-status');
+  const ordersEl = document.getElementById('ayka-v7-orders');
+  const productsEl = document.getElementById('ayka-v7-products');
+  function setStatus(t){ if(statusEl) statusEl.textContent = t; }
+  // Raw setItem that bypasses our hook - used ONLY when we write Firebase data into localStorage
+  const _rawSetItem = Storage.prototype.setItem;
+  const _rawGetItem = Storage.prototype.getItem;
+  let isSyncingFromFirebase = false;
+  function setLocal(key, val){
+    isSyncingFromFirebase = true;
+    try{ _rawSetItem.call(localStorage, key, val); }catch(e){}
+    setTimeout(()=>{ isSyncingFromFirebase = false; }, 50);
   }
-
   function fbToArray(obj){
     if(!obj) return [];
     if(Array.isArray(obj)) return obj.filter(Boolean);
     return Object.entries(obj).map(([k,v])=>({...v, _fbKey:k})).filter(x=>x && (x.id || x.name));
   }
-  function arrayToFbObj(arr){
-    let o={}; arr.forEach((it,i)=>{ o['item'+i]=it; }); return o;
-  }
-
   let lastOrdersJson='', lastProductsJson='', pollCount=0;
+  let sentOrderIds = new Set();
+  // Load already-sent IDs from session so refresh doesn't resend
+  try{ JSON.parse(sessionStorage.getItem('ayka_sent_ids')||'[]').forEach(id=>sentOrderIds.add(id)); }catch(e){}
+  function markSent(id){
+    sentOrderIds.add(id);
+    try{ sessionStorage.setItem('ayka_sent_ids', JSON.stringify([...sentOrderIds])); }catch(e){}
+    try{ localStorage.setItem('ayka_sent_ids', JSON.stringify([...sentOrderIds])); }catch(e){}
+  }
   async function pollFirebase(){
     pollCount++;
     try{
-      // Products
-      let pr = await fetch(FIREBASE_URL + '/products.json?ts=' + Date.now());
-      let pObj = await pr.json();
-      let products = fbToArray(pObj);
-      if(bannerProducts) bannerProducts.textContent = products.length;
+      let pr = await fetch(FB + '/products.json?ts=' + Date.now());
+      let products = fbToArray(await pr.json());
+      if(productsEl) productsEl.textContent = products.length;
       if(products.length>0){
         let pj = JSON.stringify(products);
         if(pj !== lastProductsJson){
           lastProductsJson = pj;
-          try{ localStorage.setItem('ayka_products', pj); }catch(e){}
-          if(pollCount===1 && !sessionStorage.getItem('ayka_fb_v4_fixed')){
-            sessionStorage.setItem('ayka_fb_v4_fixed','1');
+          setLocal('ayka_products', pj);
+          if(pollCount===1 && !sessionStorage.getItem('ayka_v7_fixed')){
+            sessionStorage.setItem('ayka_v7_fixed','1');
             setTimeout(()=>location.reload(), 800);
           }
         }
       }
-      // Orders
-      let orr = await fetch(FIREBASE_URL + '/orders.json?ts=' + Date.now());
-      let oObj = await orr.json();
-      let orders = fbToArray(oObj);
-      // Firebase returns oldest first, dashboard expects newest first
+      let orr = await fetch(FB + '/orders.json?ts=' + Date.now());
+      let orders = fbToArray(await orr.json());
       orders = orders.reverse();
-      if(bannerOrders) bannerOrders.textContent = orders.length;
+      // DEDUPE by ID - keep first of each ID only
+      let seen = new Set(); let deduped = [];
+      for(let o of orders){ let id = o.id || o._fbKey; if(!seen.has(id)){ seen.add(id); deduped.push(o); } }
+      orders = deduped;
+      if(ordersEl) ordersEl.textContent = orders.length;
       let oj = JSON.stringify(orders);
       if(oj !== lastOrdersJson){
         let isFirst = lastOrdersJson==='';
         lastOrdersJson = oj;
-        try{
-          localStorage.setItem('ayka_orders', oj);
-          localStorage.setItem('ayka_orders_backup', oj);
-        }catch(e){}
-        if(!isFirst){
-          setTimeout(()=>location.reload(), 500);
-        }
+        setLocal('ayka_orders', oj);
+        setLocal('ayka_orders_backup', oj);
+        // Mark all fetched orders as already sent, so we never push them back
+        orders.forEach(o=>{ if(o.id) sentOrderIds.add(o.id); });
+        if(!isFirst){ setTimeout(()=>location.reload(), 500); }
       }
       setStatus('FIREBASE CONNECTED ✅');
-      // Green banner when connected
-      let b = document.getElementById('ayka-v4-banner');
-      if(b) b.style.background = '#22c55e';
-    }catch(e){
-      setStatus('FIREBASE FAILED ❌ ' + e.message);
-      console.log('AYKA V4 Firebase failed', e);
-    }
+    }catch(e){ setStatus('FIREBASE FAILED ❌ ' + e.message); }
   }
   pollFirebase();
   setInterval(pollFirebase, 3000);
 
-  // Intercept local order save -> push to Firebase
-  const _setItem = Storage.prototype.setItem;
-  let sentIds = new Set();
+  // Push ONLY real new orders from user, never from Firebase sync
   const _origFetch = window.fetch;
+  const _origSetItem = Storage.prototype.setItem;
   Storage.prototype.setItem = function(key, value){
-    _setItem.call(this, key, value);
-    if(key==='ayka_orders'){
+    _origSetItem.call(this, key, value);
+    if(isSyncingFromFirebase) return; // <-- THE FIX: ignore our own sync writes
+    if(key === 'ayka_orders'){
       try{
         let orders = JSON.parse(value);
         if(Array.isArray(orders) && orders.length>0){
           let latest = orders[0];
-          if(latest && latest.id && !sentIds.has(latest.id)){
-            sentIds.add(latest.id);
-            console.log('AYKA V4: Pushing order to Firebase', latest.id);
-            _origFetch(FIREBASE_URL + '/orders.json', {
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body: JSON.stringify(latest)
-            }).then(()=>pollFirebase()).catch(e=>console.log('push failed',e));
+          if(latest && latest.id && !sentOrderIds.has(latest.id)){
+            markSent(latest.id);
+            // PUT by ID = same ID overwrites, never duplicates
+            let safeId = String(latest.id).replace(/[^a-zA-Z0-9-_]/g,'_');
+            console.log('AYKA V7: Pushing order by ID', latest.id);
+            _origFetch(FB + '/orders/' + safeId + '.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(latest)}).then(()=>pollFirebase()).catch(()=>{});
           }
         }
       }catch(e){}
     }
-  };
-  // Block old PHP / GAS calls - they will never work
-  window.fetch = function(input, init){
-    let url = typeof input==='string'?input:(input&&input.url?input.url:'');
-    if(url && (url.includes('infinityfreeapp.com') || url.includes('script.google.com'))){
-      // Return empty success to stop old code from breaking
-      return Promise.resolve(new Response(JSON.stringify([]), {status:200, headers:{'Content-Type':'application/json'}}));
-    }
-    return _origFetch(input, init);
-  };
-  console.log('AYKA FIREBASE V6 ACTIVE');
-
-  // AYKA V5 - SYNC PRODUCTS TOO (add / discount / stock / price)
-  // This watches when Dashboard saves products to localStorage and pushes them to Firebase
-  const _origSetItem2 = Storage.prototype.setItem;
-  // Already overridden once in V4 for orders - wrap again for products
-  const _prevSetItem = Storage.prototype.setItem;
-  Storage.prototype.setItem = function(key, value){
-    _prevSetItem.call(this, key, value);
     if(key === 'ayka_products'){
       try{
         let products = JSON.parse(value);
         if(Array.isArray(products) && products.length>0){
-          // Avoid loop: only push if different from last Firebase poll
           let pj = JSON.stringify(products);
-          if(pj !== window.__ayka_lastProductsJson){
-            console.log('AYKA V5: Products changed in Dashboard, pushing to Firebase', products.length);
-            // Firebase Realtime: PUT replaces whole /products node
-            fetch('https://ayka-store-9a2d5-default-rtdb.firebaseio.com/products.json', {
-              method: 'PUT',
-              headers: {'Content-Type':'application/json'},
-              body: pj
-            }).then(()=>console.log('AYKA V5: Products synced to Firebase ✅')).catch(e=>console.log('products sync failed', e));
+          if(pj !== lastProductsJson){
+            _origFetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: pj}).catch(()=>{});
           }
         }
       }catch(e){}
     }
-    // Also sync discounts if stored separately
-    if(key === 'ayka_discounts' || key === 'ayka_coupons' || key === 'ayka_offers'){
-      try{
-        fetch('https://ayka-store-9a2d5-default-rtdb.firebaseio.com/' + key + '.json', {
-          method: 'PUT',
-          headers: {'Content-Type':'application/json'},
-          body: value
-        }).catch(()=>{});
-      }catch(e){}
-    }
   };
-  // Store last products json for comparison - set from poll
-  window.__ayka_lastProductsJson = '';
-  // Hook poll to update last json - poll already sets lastProductsJson in V4, mirror it
-  setInterval(()=>{
-    try{
-      let cur = localStorage.getItem('ayka_products');
-      if(cur) window.__ayka_lastProductsJson = cur;
-    }catch(e){}
-  }, 3000);
-  
-  // AYKA V6 - IMAGES LIGHT: compress + URL only, never base64 in DB
-  (function(){
-    // 1. Compress any image file before it is used
-    window.AYKA_compressImage = function(file){
-      return new Promise((resolve)=>{
-        if(!file || !file.type.startsWith('image/')){ resolve(null); return; }
-        let reader = new FileReader();
-        reader.onload = function(e){
-          let img = new Image();
-          img.onload = function(){
-            let maxW = 800, maxH = 800;
-            let w = img.width, h = img.height;
-            if(w > maxW || h > maxH){
-              let r = Math.min(maxW/w, maxH/h);
-              w = Math.round(w*r); h = Math.round(h*r);
-            }
-            let canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
-            let ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            // JPEG 0.7 = small + still sharp, < 100KB usually
-            let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            console.log('AYKA V6: Image compressed', file.name, file.size, '->', Math.round(dataUrl.length*0.75/1024), 'KB');
-            resolve(dataUrl);
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-    // 2. If dashboard tries to save base64 image into product, replace with compressed version and warn
-    // We hook file inputs globally
-    document.addEventListener('change', async function(e){
-      let input = e.target;
-      if(input && input.type === 'file' && input.files && input.files[0] && input.files[0].type.startsWith('image/')){
-        let compressed = await window.AYKA_compressImage(input.files[0]);
-        if(compressed){
-          // Store compressed in a global so dashboard code can use it instead of original
-          window.__ayka_compressedImage = compressed;
-          // Show size in console
-          console.log('AYKA V6: Ready to upload compressed image, not original');
-        }
-      }
-    }, true);
-    // 3. Lazy loading for store images - don't load all images at once
-    function enableLazy(){
-      document.querySelectorAll('img').forEach(img=>{
-        if(!img.getAttribute('loading')) img.setAttribute('loading','lazy');
-        if(!img.getAttribute('decoding')) img.setAttribute('decoding','async');
-      });
+  // Block old InfinityFree / GAS calls
+  window.fetch = function(input, init){
+    let url = typeof input==='string'?input:(input&&input.url?input.url:'');
+    if(url && (url.includes('infinityfreeapp.com') || url.includes('script.google.com'))){
+      return Promise.resolve(new Response(JSON.stringify([]), {status:200, headers:{'Content-Type':'application/json'}}));
     }
-    // Run lazy every 2 sec for new products
-    setInterval(enableLazy, 2000);
-    enableLazy();
-    console.log('AYKA V6 IMAGES LIGHT ACTIVE - URL only, compressed to 800px JPEG 0.7, lazy loading');
-  })();
-
-  console.log('AYKA V5 SYNC ALL ACTIVE - Products/Discounts/Orders all sync');
-
+    return _origFetch(input, init);
+  };
+  // Image compress + lazy - keep from V6
+  window.AYKA_compressImage = function(file){
+    return new Promise((resolve)=>{
+      if(!file || !file.type.startsWith('image/')){ resolve(null); return; }
+      let reader = new FileReader();
+      reader.onload = function(e){
+        let img = new Image();
+        img.onload = function(){
+          let maxW=800, maxH=800, w=img.width, h=img.height;
+          if(w>maxW||h>maxH){ let r=Math.min(maxW/w, maxH/h); w=Math.round(w*r); h=Math.round(h*r); }
+          let c=document.createElement('canvas'); c.width=w; c.height=h;
+          c.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(c.toDataURL('image/jpeg',0.7));
+        };
+        img.src=e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  function enableLazy(){ document.querySelectorAll('img').forEach(img=>{ if(!img.getAttribute('loading')) img.setAttribute('loading','lazy'); }); }
+  setInterval(enableLazy, 2000); enableLazy();
+  console.log('AYKA FIREBASE V7 ACTIVE - No duplicate');
 })();
 </script>
 
