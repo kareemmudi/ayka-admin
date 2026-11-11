@@ -3177,26 +3177,15 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
   fetch(API + '?action=get_products').then(r=>r.json()).then(products=>{
     if(Array.isArray(products) && products.length>0){
       try{ localStorage.setItem('ayka_products', JSON.stringify(products))
-      // V9 SHIPPING SAVE - collect shipping costs from inputs and save to Firebase
+      // V9.2 SHIPPING SAVE - FIXED KEY: ayka_v2_shipping (the real key React uses)
       try{
-        let shipArr = [];
-        document.querySelectorAll('input[data-cost]').forEach(inp=>{
-          let parent = inp.closest('div');
-          let label = parent ? parent.textContent.replace(/EGP.*/,'').trim() : '';
-          // Governorate name is first word before cost - use parent text
-          let gov = '';
-          if(parent){
-            let span = parent.querySelector('span');
-            if(span) gov = span.textContent.trim();
-          }
-          if(gov){
-            shipArr.push({governorate: gov, cost: Number(inp.value)||0});
-          }
-        });
-        if(shipArr.length>0){
-          await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(shipArr)});
-          try{ localStorage.setItem('ayka_shipping', JSON.stringify(shipArr)); }catch(e){}
-          console.log('AYKA V9: Shipping saved', shipArr);
+        // React already saved latest shipping to ayka_v2_shipping via useEffect when you edited it
+        // Wait for React to flush, then read it
+        await new Promise(r=>setTimeout(r, 400));
+        let shipJson = localStorage.getItem('ayka_v2_shipping');
+        if(shipJson){
+          await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson});
+          console.log('AYKA V9.2: Shipping saved to Firebase', shipJson.slice(0,120));
         }
       }catch(e){ console.log('shipping save failed', e); }
 ; }catch(e){}
@@ -3223,7 +3212,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 <!-- AYKA FIREBASE V9 - FIX DUPLICATE - Order by ID, no loop -->
-<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIREBASE V9 LIVE - STABLE - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
+<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIREBASE V9.2 LIVE - SHIPPING FIXED - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
 <div style="height:28px;"></div>
 <script>
 (function(){
@@ -3296,7 +3285,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         let sr2 = await fetch(FB + '/shipping.json?ts=' + Date.now());
         let ship2 = await sr2.json();
         if(ship2){
-          try{ localStorage.setItem('ayka_shipping', JSON.stringify(ship2)); }catch(e){}
+          try{ localStorage.setItem('ayka_v2_shipping', JSON.stringify(ship2)); }catch(e){}
         }
       }catch(e){}
 
