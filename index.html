@@ -3240,7 +3240,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(productsEl) productsEl.textContent = products.length;
       if(products.length>0){
         let pj = JSON.stringify(products);
-        if(pj !== lastProductsJson){
+        if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil)){
           lastProductsJson = pj;
           setLocal('ayka_products', pj);
           if(pollCount===1 && !sessionStorage.getItem('ayka_v7_fixed')){
@@ -3336,6 +3336,98 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
   function enableLazy(){ document.querySelectorAll('img').forEach(img=>{ if(!img.getAttribute('loading')) img.setAttribute('loading','lazy'); }); }
   setInterval(enableLazy, 2000); enableLazy();
   console.log('AYKA FIREBASE V7 ACTIVE - No duplicate');
+})();
+</script>
+
+
+<!-- AYKA V8 - SAVE BUTTON + DIRTY PROTECTION -->
+<div id="ayka-save-bar" style="position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#111113; border-top:1px solid #222; padding:10px 12px; display:flex; gap:8px; align-items:center; justify-content:space-between; font-family:sans-serif; box-shadow:0 -4px 20px rgba(0,0,0,0.5);">
+  <div style="font-size:12px; color:#fff;">
+    <span id="ayka-save-status" style="color:#888;">✅ كل التغييرات محفوظة</span>
+    <div style="font-size:10px; color:#666; margin-top:2px;">المخزون / الأسعار / الخصومات - دوس حفظ بعد أي تعديل</div>
+  </div>
+  <button id="ayka-save-btn" style="background:#22c55e; color:#000; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer; white-space:nowrap;">💾 حفظ التغييرات</button>
+</div>
+<div style="height:64px;"></div>
+<script>
+(function(){
+  const FB = 'https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
+  const saveBtn = document.getElementById('ayka-save-btn');
+  const saveStatus = document.getElementById('ayka-save-status');
+  let lastEditTime = 0;
+  let autoSaveTimer = null;
+  window.__ayka_dirty = false;
+  function setSaveStatus(txt, color){
+    if(saveStatus){ saveStatus.textContent = txt; saveStatus.style.color = color || '#888'; }
+  }
+  // 1. Detect any edit in dashboard (typing in stock / price / etc)
+  document.addEventListener('input', function(e){
+    let t = e.target;
+    if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')){
+      lastEditTime = Date.now();
+      window.__ayka_dirty = true;
+      setSaveStatus('● فيه تغييرات مش محفوظة - دوس حفظ', '#f59e0b');
+      if(saveBtn) saveBtn.style.background = '#f59e0b';
+      // Auto-save after 2 sec of no typing - so you don't even need to press Save
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(()=>{ doSave(true); }, 2000);
+    }
+  }, true);
+  document.addEventListener('change', function(e){
+    let t = e.target;
+    if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')){
+      lastEditTime = Date.now();
+      window.__ayka_dirty = true;
+      setSaveStatus('● فيه تغييرات مش محفوظة - دوس حفظ', '#f59e0b');
+      if(saveBtn) saveBtn.style.background = '#f59e0b';
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(()=>{ doSave(true); }, 2000);
+    }
+  }, true);
+  // 2. Save function - reads current products from localStorage (React already saved them there via useEffect) and pushes to Firebase
+  async function doSave(isAuto){
+    // Wait a tiny bit for React to flush state -> localStorage
+    await new Promise(r=>setTimeout(r, 300));
+    try{
+      let productsJson = localStorage.getItem('ayka_products');
+      if(!productsJson){ setSaveStatus('⚠️ مفيش منتجات للحفظ', '#ef4444'); return; }
+      let products = JSON.parse(productsJson);
+      if(!Array.isArray(products) || products.length===0){ setSaveStatus('⚠️ مفيش منتجات للحفظ', '#ef4444'); return; }
+      // Recalculate total stock from variants - so Black S 5 is counted
+      products = products.map(p=>{
+        if(p.variants && Array.isArray(p.variants)){
+          p.stock = p.variants.reduce((s,v)=>s + (Number(v.stock)||0), 0);
+        }
+        return p;
+      });
+      setSaveStatus('⏳ جاري الحفظ...', '#3B82F6');
+      let res = await fetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(products)});
+      if(!res.ok) throw new Error('Firebase failed');
+      // Also save back corrected totals to localStorage
+      try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
+      window.__ayka_dirty = false;
+      lastEditTime = 0;
+      setSaveStatus('✅ اتحفظ في Firebase و هيسمع في المتجر خلال 3 ثواني', '#22c55e');
+      if(saveBtn) saveBtn.style.background = '#22c55e';
+      setTimeout(()=>{ setSaveStatus('✅ كل التغييرات محفوظة', '#888'); }, 4000);
+      console.log('AYKA V8: Saved', products.length, 'products to Firebase - auto:', !!isAuto);
+    }catch(e){
+      setSaveStatus('❌ الحفظ فشل - جرب تاني', '#ef4444');
+      console.log('AYKA V8 save failed', e);
+    }
+  }
+  if(saveBtn) saveBtn.addEventListener('click', ()=>doSave(false));
+  // 3. Prevent Firebase poll from overwriting your unsaved edit
+  // The V7 poll uses setLocal() - we patch it by exposing lastEditTime
+  // Poll in V7 checks lastProductsJson - if you just edited, we block overwrite for 10 sec
+  // We do this by intercepting: if dirty and edit < 10 sec ago, skip the next poll overwrite
+  // Implemented via a flag the poll reads - we set window.__ayka_blockPollUntil
+  setInterval(()=>{
+    if(window.__ayka_dirty && Date.now() - lastEditTime < 10000){
+      window.__ayka_blockPollUntil = Date.now() + 10000;
+    }
+  }, 1000);
+  console.log('AYKA V8 SAVE BUTTON ACTIVE - Edit stock, press Save, it syncs to store');
 })();
 </script>
 
