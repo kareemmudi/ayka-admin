@@ -3177,17 +3177,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
   fetch(API + '?action=get_products').then(r=>r.json()).then(products=>{
     if(Array.isArray(products) && products.length>0){
       try{ localStorage.setItem('ayka_products', JSON.stringify(products))
-      // V9.2 SHIPPING SAVE - FIXED KEY: ayka_v2_shipping (the real key React uses)
-      try{
-        // React already saved latest shipping to ayka_v2_shipping via useEffect when you edited it
-        // Wait for React to flush, then read it
-        await new Promise(r=>setTimeout(r, 400));
-        let shipJson = localStorage.getItem('ayka_v2_shipping');
-        if(shipJson){
-          await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson});
-          console.log('AYKA V9.2: Shipping saved to Firebase', shipJson.slice(0,120));
-        }
-      }catch(e){ console.log('shipping save failed', e); }
+
 ; }catch(e){}
       // Reload once to show API products (not old 13)
       if(!sessionStorage.getItem('ayka_api_v2_reloaded')){
@@ -3427,6 +3417,16 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(!res.ok) throw new Error('Firebase failed');
       // Also save back corrected totals to localStorage
       try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
+      // V9.4 SHIPPING SAVE - CORRECT PLACE: inside doSave, after products
+      try{
+        await new Promise(r=>setTimeout(r, 400));
+        let shipJson2 = localStorage.getItem('ayka_v2_shipping');
+        if(shipJson2){
+          await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson2});
+          console.log('AYKA V9.4: Shipping saved', shipJson2.slice(0,100));
+        }
+      }catch(e){ console.log('V9.4 shipping save failed', e); }
+
       window.__ayka_dirty = false;
       lastEditTime = 0;
       setSaveStatus('✅ اتحفظ في Firebase و هيسمع في المتجر خلال 3 ثواني', '#22c55e');
