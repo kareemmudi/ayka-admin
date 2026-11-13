@@ -3559,6 +3559,7 @@ Qe==="settings"&&d("div",{className:"max-w-2xl space-y-6",children:[d("div",{cla
         [class*="shadow-[0_0_20px_rgba(59,130,246"] { box-shadow: 0 0 20px ${theme.primary}55 !important; }
         a, button.bg-blue-500 { background-color: ${theme.primary} !important; }
       `;
+      document.body.style.background = theme.bg; document.body.style.color = theme.text;
       document.documentElement.style.setProperty('--ayka-primary', theme.primary);
       document.documentElement.style.setProperty('--ayka-bg', theme.bg);
       document.documentElement.style.setProperty('--ayka-card', theme.card);
@@ -3567,13 +3568,13 @@ Qe==="settings"&&d("div",{className:"max-w-2xl space-y-6",children:[d("div",{cla
     }catch(e){}
   }
   window.aykaLoadThemeFromFirebase = function(){
-    fetch(FB + '/theme.json?ts=' + Date.now()).then(r=>r.json()).then(t=>{
-      if(t && t.id){ aykaApplyTheme(t); }
+    fetch('https://ayka-store-9a2d5-default-rtdb.firebaseio.com/theme.json?ts=' + Date.now()).then(r=>r.json()).then(t=>{
+      if(t && t.id){ window.aykaApplyTheme(t); }
       else {
         // No theme saved yet = default AYKA Blue, don't change anything
         try{
           let saved = JSON.parse(localStorage.getItem('ayka_theme')||'null');
-          if(saved && saved.id) aykaApplyTheme(saved);
+          if(saved && saved.id) window.aykaApplyTheme(saved);
         }catch(e){}
       }
     }).catch(()=>{});
@@ -3685,19 +3686,18 @@ window.aykaLoadShapeFromFirebase = async function(){
 </script>
 <style id="ayka-shapes-css">
 /* V9.6 SHAPES - only additions, base V9.3 untouched when data-shape=ayka-original */
-[data-shape="rounded-soft"] .product-card, [data-shape="rounded-soft"] button, [data-shape="rounded-soft"] img { border-radius: 28px !important; }
-[data-shape="sharp-square"] .product-card, [data-shape="sharp-square"] button, [data-shape="sharp-square"] img, [data-shape="sharp-square"] input { border-radius: 0px !important; }
+/* V9.6.1 FIX: Use real selectors - store uses Tailwind classes, not .product-card */
+[data-shape="rounded-soft"] [class*="rounded-"] { border-radius: 28px !important; }
+[data-shape="sharp-square"] [class*="rounded-"] { border-radius: 0px !important; }
 [data-shape="pill-capsule"] button { border-radius: 999px !important; padding-left: 22px !important; padding-right: 22px !important; }
-[data-shape="pill-capsule"] .product-card { border-radius: 28px !important; }
-[data-shape="minimal-flat"] .product-card, [data-shape="minimal-flat"] button { box-shadow: none !important; border: 1px solid #222 !important; }
-[data-shape="bold-border"] .product-card { border: 3px solid #fff !important; box-shadow: 0 0 0 1px #000 !important; }
-[data-shape="big-cards"] .product-card { transform: scale(1.02); padding: 18px !important; }
-[data-shape="list-view"] #products { display: flex !important; flex-direction: column !important; }
-[data-shape="list-view"] .product-card { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 14px !important; }
-[data-shape="compact-grid"] #products { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
-[data-shape="compact-grid"] .product-card { padding: 8px !important; font-size: 12px !important; }
-[data-shape="luxury-wide"] #products { gap: 28px !important; }
-[data-shape="luxury-wide"] .product-card { padding: 24px !important; letter-spacing: 0.02em !important; }
+[data-shape="pill-capsule"] [class*="rounded-"] { border-radius: 28px !important; }
+[data-shape="minimal-flat"] [class*="shadow-"] { box-shadow: none !important; }
+[data-shape="bold-border"] [class*="rounded-"] { border-width: 3px !important; border-color: #fff !important; }
+[data-shape="big-cards"] main { transform: scale(1.01); }
+[data-shape="list-view"] [class*="grid-cols-"] { display: flex !important; flex-direction: column !important; }
+[data-shape="compact-grid"] [class*="grid-cols-"] { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+[data-shape="luxury-wide"] [class*="grid-cols-"] { gap: 28px !important; }
+[data-shape="luxury-wide"] main { letter-spacing: 0.02em !important; }
 </style>
 <script>
   // Auto-load shape on store start, poll every 5s for dashboard changes
