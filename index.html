@@ -3175,7 +3175,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
   };
   // On load, fetch fresh products & orders from API and overwrite localStorage
   fetch(API + '?action=get_products').then(r=>r.json()).then(products=>{
-    if(Array.isArray(products) && products.length>0){
+    if(Array.isArray(products)){ // V9.4 FIX: allow [] to delete from Firebase
       try{ localStorage.setItem('ayka_products', JSON.stringify(products))
 
 ; }catch(e){}
@@ -3240,8 +3240,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       let pr = await fetch(FB + '/products.json?ts=' + Date.now());
       let products = fbToArray(await pr.json());
       if(productsEl) productsEl.textContent = products.length;
-      if(products.length>0){
-        let pj = JSON.stringify(products);
+      if(products.length===0 && lastProductsJson !== '[]'){ lastProductsJson='[]'; setLocal('ayka_products','[]'); } if(products.length>0){ let pj = JSON.stringify(products);
         if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil)){
           lastProductsJson = pj;
           setLocal('ayka_products', pj);
@@ -3309,7 +3308,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
     if(key === 'ayka_products'){
       try{
         let products = JSON.parse(value);
-        if(Array.isArray(products) && products.length>0){
+        if(Array.isArray(products)){ // V9.4 FIX: allow [] to delete from Firebase
           let pj = JSON.stringify(products);
           if(pj !== lastProductsJson){
             _origFetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: pj}).catch(()=>{});
@@ -3402,9 +3401,9 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
     await new Promise(r=>setTimeout(r, 300));
     try{
       let productsJson = localStorage.getItem('ayka_products');
-      if(!productsJson){ setSaveStatus('⚠️ مفيش منتجات للحفظ', '#ef4444'); return; }
+      if(!productsJson){ productsJson='[]'; } // V9.4 FIX: missing = empty
       let products = JSON.parse(productsJson);
-      if(!Array.isArray(products) || products.length===0){ setSaveStatus('⚠️ مفيش منتجات للحفظ', '#ef4444'); return; }
+      if(!Array.isArray(products)){ products = []; } // V9.4 FIX: allow [] to delete all
       // Recalculate total stock from variants - so Black S 5 is counted
       products = products.map(p=>{
         if(p.variants && Array.isArray(p.variants)){
