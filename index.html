@@ -2824,7 +2824,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       }catch(e){}
     }).catch(()=>{});
   }
-  function syncProducts(){
+  function syncProducts(){ return; /* V9.4 FIX2: disabled - Firebase is single source, GAS merge resurrects deleted products */ if(false){
     fetch(GAS+"?action=getProducts").then(r=>r.json()).then(d=>{
       let remote = d.products||[];
       if(!remote.length) return;
@@ -3235,7 +3235,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
     try{ localStorage.setItem('ayka_sent_ids', JSON.stringify([...sentOrderIds])); }catch(e){}
   }
   async function pollFirebase(){
-    pollCount++;
+    pollCount++; if(window.__ayka_dirty){ return; } // V9.4 FIX2 dirty
     try{
       let pr = await fetch(FB + '/products.json?ts=' + Date.now());
       let products = fbToArray(await pr.json());
@@ -3244,10 +3244,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil)){
           lastProductsJson = pj;
           setLocal('ayka_products', pj);
-          if(pollCount===1 && !sessionStorage.getItem('ayka_v7_fixed')){
-            sessionStorage.setItem('ayka_v7_fixed','1');
-            setTimeout(()=>location.reload(), 800);
-          }
+          if(!window.__ayka_dirty){ sessionStorage.setItem('ayka_last_reloaded_products', pj); setTimeout(()=>location.reload(), 500); }
         }
       }
       let orr = await fetch(FB + '/orders.json?ts=' + Date.now());
@@ -3311,7 +3308,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         if(Array.isArray(products)){ // V9.4 FIX: allow [] to delete from Firebase
           let pj = JSON.stringify(products);
           if(pj !== lastProductsJson){
-            _origFetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: pj}).catch(()=>{});
+            // V9.4 FIX2: DISABLED auto-PUT - only Save button writes to Firebase, prevents stale React state from resurrecting old data
           }
         }
       }catch(e){}
