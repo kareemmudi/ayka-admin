@@ -3203,7 +3203,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       // Reload once to show API products (not old 13)
       if(!sessionStorage.getItem('ayka_api_v2_reloaded')){
         sessionStorage.setItem('ayka_api_v2_reloaded','1');
-        // FIX REFRESH BUG: no auto-reload here either
+        // FIX: no auto-reload
       }
     }
   }).catch(()=>{});
@@ -3264,12 +3264,17 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(products.length>0){
         let pj = JSON.stringify(products);
         if(window.__ayka_lastSavedProductsJson && pj === window.__ayka_lastSavedProductsJson){ lastProductsJson = pj; }
-        if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil)){
+        if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil) && !window.__ayka_dirty){
           lastProductsJson = pj;
-          setLocal('ayka_products', pj);
+          // FIX PRODUCTS TOO: poll is READ-ONLY - never write products to localStorage.
+          // Old code wrote old Firebase products over your new edit in localStorage,
+          // then Save read localStorage and re-saved the old stock/discount/price.
+          // React state is the source of truth. Save reads React-flushed localStorage only after you stop typing.
+          // We do NOT setLocal here anymore.
+          window.__ayka_fbProducts = products;
           if(pollCount===1 && !sessionStorage.getItem('ayka_v7_fixed')){
             sessionStorage.setItem('ayka_v7_fixed','1');
-            // FIX REFRESH BUG: never auto-reload - reload was wiping unsaved edits and reverting to old Firebase data
+            // FIX: no auto-reload
           }
         }
       }
@@ -3285,25 +3290,22 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(oj !== lastOrdersJson){
         let isFirst = lastOrdersJson==='';
         lastOrdersJson = oj;
-        setLocal('ayka_orders', oj);
-        setLocal('ayka_orders_backup', oj);
+        // FIX ORDERS TOO: poll is READ-ONLY - never write orders to localStorage, never reload.
+        // Old code wrote Firebase orders over your local orders + reloaded the page, wiping edits.
+        window.__ayka_fbOrders = orders;
         // Mark all fetched orders as already sent, so we never push them back
         orders.forEach(o=>{ if(o.id) sentOrderIds.add(o.id); });
-        if(!isFirst){ /* FIX REFRESH BUG: no auto-reload on orders - was reverting edits */ }
+        if(!isFirst){ /* FIX: no auto-reload */ }
       }
       
-      // V9 SHIPPING POLL - FIX REFRESH BUG: never overwrite while editing/saving
+      // FIX REFRESH BUG 2: shipping poll is READ-ONLY - never write to localStorage.
+      // Old code wrote old Firebase shipping (50) over your new edit (60) in localStorage,
+      // then Save read localStorage and re-saved 50. That was the revert loop.
+      // React state 'l' is the source of truth for shipping. Save reads from the inputs, not localStorage.
       try{
-        if(!(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil) && !window.__ayka_dirty){
-          let sr2 = await fetch(FB + '/shipping.json?ts=' + Date.now());
-          let ship2 = await sr2.json();
-          if(ship2){
-            let sj = JSON.stringify(ship2);
-            if(sj !== window.__ayka_lastSavedShippingJson){
-              setLocal('ayka_v2_shipping', sj);
-            }
-          }
-        }
+        let sr2 = await fetch(FB + '/shipping.json?ts=' + Date.now());
+        let ship2 = await sr2.json();
+        if(ship2){ window.__ayka_fbShipping = ship2; }
       }catch(e){}
 
       setStatus('FIREBASE CONNECTED ✅');
@@ -3444,22 +3446,56 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(!res.ok) throw new Error('Firebase failed');
       // Also save back corrected totals to localStorage
       try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
-      // V9.4 SHIPPING SAVE - CORRECT PLACE: inside doSave, after products
+      // FIX REFRESH BUG - CORE: read shipping from the INPUTS on screen, NOT from localStorage.
+      // localStorage may have just been overwritten by the poll with old Firebase data (50).
+      // The inputs show what YOU typed (60). That is the truth.
       try{
         await new Promise(r=>setTimeout(r, 400));
-        let shipJson2 = localStorage.getItem('ayka_v2_shipping');
-        if(shipJson2){
-          await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson2});
-          console.log('AYKA V9.4: Shipping saved', shipJson2.slice(0,100));
+        let shipFromDOM = null;
+        try{
+          let inputs = Array.from(document.querySelectorAll('input[data-cost]'));
+          if(inputs.length > 0){
+            shipFromDOM = inputs.map(inp => {
+              let row = inp.closest('div');
+              let govEl = row && row.parentElement ? row.parentElement.querySelector('span') : null;
+              // The governorate name is the <span> sibling in the same row container
+              let gov = '';
+              let container = inp.closest('div.flex');
+              if(container){ let s = container.parentElement ? container.parentElement.querySelector('span') : null; if(s) gov = s.textContent.trim(); }
+              if(!gov && govEl) gov = govEl.textContent.trim();
+              return { governorate: gov, cost: Number(inp.value) };
+            }).filter(x => x.governorate);
+            // Fallback: if governorate names not found, use localStorage order + DOM values
+            if(shipFromDOM.length === 0) shipFromDOM = null;
+          }
+        }catch(e){ shipFromDOM = null; }
+        let shipJson2 = null;
+        if(shipFromDOM && shipFromDOM.length > 0){
+          shipJson2 = JSON.stringify(shipFromDOM);
+          // Also fix localStorage to match what you typed, so refresh reads the new value
+          try{ localStorage.setItem('ayka_v2_shipping', shipJson2); }catch(e){}
+          console.log('AYKA FIX: Shipping read from DOM inputs', shipJson2.slice(0,200));
+        } else {
+          shipJson2 = localStorage.getItem('ayka_v2_shipping');
+          console.log('AYKA FIX: No DOM inputs found, fallback to localStorage');
         }
-      }catch(e){ console.log('V9.4 shipping save failed', e); }
+        if(shipJson2){
+          let sres = await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson2});
+          console.log('AYKA FIX: Shipping PUT status', sres.status);
+          // VERIFY: re-fetch from Firebase and show what actually stuck
+          try{
+            let verify = await fetch(FB + '/shipping.json?ts=' + Date.now());
+            let vj = await verify.json();
+            console.log('AYKA FIX: Shipping VERIFY from Firebase', JSON.stringify(vj).slice(0,200));
+            window.__ayka_lastSavedShippingJson = JSON.stringify(vj);
+          }catch(e){}
+        }
+      }catch(e){ console.log('Shipping save failed', e); }
 
       window.__ayka_dirty = false;
       lastEditTime = 0;
-      // FIX REFRESH BUG: block poll for 10s after save + tell poll this is our own save
       window.__ayka_blockPollUntil = Date.now() + 10000;
       try{ window.__ayka_lastSavedProductsJson = JSON.stringify(products); }catch(e){}
-      try{ window.__ayka_lastSavedShippingJson = localStorage.getItem('ayka_v2_shipping'); }catch(e){}
       setSaveStatus('✅ اتحفظ في Firebase و هيسمع في المتجر خلال 3 ثواني', '#22c55e');
       if(saveBtn) saveBtn.style.background = '#22c55e';
       setTimeout(()=>{ setSaveStatus('✅ كل التغييرات محفوظة', '#888'); }, 4000);
