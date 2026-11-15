@@ -19,16 +19,7 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style><style id="ayka-fixed-separated">
-  /* AYKA V9.4 FIXED - hide ONLY store, keep password field visible */
-  html,body{background:#0a0a0b !important}
-  /* Store is in header/section/main/footer - hide those only */
-  header, section, main, footer, #products{ display:none !important; }
-  /* Keep admin login + dashboard visible - DO NOT hide divs */
-  /* Admin modal stays on top */
-  div[class*="fixed"][class*="inset-0"]{ z-index:9999 !important; background:#0a0a0b !important; }
-</style>
-<style>* { -webkit-text-size-adjust: 86.33333333333333% !important; }</style><style>
+</style><style>* { -webkit-text-size-adjust: 86.33333333333333% !important; }</style><style>
 @font-face {
   font-family: "Optimistic";
   font-style: normal;
@@ -49,7 +40,7 @@
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-</style><title>AYKA ADMIN V9.4</title><meta name="description" content="AYKA Store - Premium streetwear"><style>* { -webkit-text-size-adjust: 86.33333333333333% !important; }</style><style>
+</style><title>AYKA Store</title><meta name="description" content="AYKA Store - Premium streetwear"><style>* { -webkit-text-size-adjust: 86.33333333333333% !important; }</style><style>
 @font-face {
   font-family: "Optimistic";
   font-style: normal;
@@ -2562,7 +2553,7 @@ summary {
 </style>
 <style id="dashboard-alone-style">
         /* Hide store UI completely */
-        header, section, main, footer, #products {
+        body > header, body > section, body > main, body > footer, #products, #adminDot {
           display: none !important;
         }
         /* But show dashboard modals - they are fixed inset-0 */
@@ -2909,7 +2900,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       style.id = 'dashboard-alone-style';
       style.textContent = `
         /* Hide store UI completely */
-        header, section, main, footer, #products {
+        body > header, body > section, body > main, body > footer, #products, #adminDot {
           display: none !important;
         }
         /* But show dashboard modals - they are fixed inset-0 */
@@ -3191,7 +3182,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       // Reload once to show API products (not old 13)
       if(!sessionStorage.getItem('ayka_api_v2_reloaded')){
         sessionStorage.setItem('ayka_api_v2_reloaded','1');
-        // V9.4 FIX3: NO AUTO RELOAD;
+        setTimeout(()=>location.reload(), 400);
       }
     }
   }).catch(()=>{});
@@ -3211,7 +3202,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 <!-- AYKA FIREBASE V9 - FIX DUPLICATE - Order by ID, no loop -->
-<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIREBASE V9.2 LIVE - SHIPPING FIXED - <span id="ayka-v7-status">Checking...</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
+<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIREBASE V9.2 LIVE - SHIPPING FIXED - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
 <div style="height:28px;"></div>
 <script>
 (function(){
@@ -3253,7 +3244,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         if(pj !== lastProductsJson && !(window.__ayka_blockPollUntil && Date.now() < window.__ayka_blockPollUntil)){
           lastProductsJson = pj;
           setLocal('ayka_products', pj);
-          if(!window.__ayka_dirty){ sessionStorage.setItem('ayka_last_reloaded_products', pj); // V9.4 FIX3: NO AUTO RELOAD; }
+          /* V9.3 FIX: products - NO auto reload, only update localStorage, manual refresh shows new */
         }
       }
       let orr = await fetch(FB + '/orders.json?ts=' + Date.now());
@@ -3272,7 +3263,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         setLocal('ayka_orders_backup', oj);
         // Mark all fetched orders as already sent, so we never push them back
         orders.forEach(o=>{ if(o.id) sentOrderIds.add(o.id); });
-        if(!isFirst){ // V9.4 FIX3: NO AUTO RELOAD; }
+        if(!isFirst){ setTimeout(()=>location.reload(), 500); }
       }
       
       // V9 SHIPPING POLL - load shipping from Firebase
