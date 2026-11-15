@@ -3410,6 +3410,10 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       });
       setSaveStatus('⏳ جاري الحفظ...', '#3B82F6');
       let res = await fetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(products)});
+      // V9.3 FINAL FIX: block poll for 10s so it doesn't overwrite with old Firebase before PUT settles, and tell poll that new is the truth
+      window.__ayka_blockPollUntil = Date.now() + 10000;
+      try{ window.__ayka_lastSavedProducts = JSON.stringify(products); }catch(e){}
+      try{ lastProductsJson = JSON.stringify(products); }catch(e){}
       if(!res.ok) throw new Error('Firebase failed');
       // Also save back corrected totals to localStorage
       try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
