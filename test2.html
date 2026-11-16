@@ -1,32 +1,44 @@
 <!DOCTYPE html>
-<html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TEST</title></head>
+<html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TEST STOCK</title></head>
 <body style="background:#000;color:#fff;font-family:sans-serif;padding:20px">
-<h1>TEST شغال</h1>
-<p>القاهرة في Firebase: <b id="c">...</b></p>
-<input id="v" type="number" value="63" style="font-size:22px;padding:10px">
-<br><br>
+<h1>TEST مخزون شغال</h1>
+<p>اول منتج في Firebase:</p>
+<p>الاسم: <b id="name">...</b></p>
+<p>مخزون Black / S في Firebase: <b id="cur">...</b></p>
+<label>غيره لـ: <input id="v" type="number" value="5" style="font-size:22px;padding:10px;width:100px"></label><br><br>
 <button onclick="save()" style="font-size:20px;padding:14px;background:#22c55e;border:none;border-radius:10px">حفظ</button>
 <p id="s"></p>
 <script>
 var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
-fetch(FB+'/shipping.json').then(r=>r.json()).then(j=>{
-var a=Array.isArray(j)?j:Object.values(j||{});
-var c=a.find(x=>x.governorate==='Cairo');
-document.getElementById('c').textContent=c?c.cost:'مش لاقي';
+var prods=null;
+fetch(FB+'/products.json').then(r=>r.json()).then(j=>{
+prods=Array.isArray(j)?j:Object.values(j||{});
+if(!prods.length){document.getElementById('cur').textContent='مفيش منتجات';return;}
+var p=prods[0];
+document.getElementById('name').textContent=p.name||p.id;
+var v=(p.variants||[]).find(x=>x.color==='Black'&&x.size==='S')||(p.variants||[])[0];
+document.getElementById('cur').textContent=v?v.stock:p.stock;
+if(v) document.getElementById('v').value=v.stock;
 });
 function save(){
 var nv=Number(document.getElementById('v').value);
 document.getElementById('s').textContent='بحفظ...';
-fetch(FB+'/shipping.json').then(r=>r.json()).then(j=>{
+fetch(FB+'/products.json').then(r=>r.json()).then(j=>{
 var a=Array.isArray(j)?j:Object.values(j||{});
-a=a.map(x=>x.governorate==='Cairo'?{governorate:'Cairo',cost:nv}:x);
-return fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
-}).then(r=>{document.getElementById('s').textContent='PUT status '+r.status; return fetch(FB+'/shipping.json');})
+var p=a[0];
+if(p.variants){
+var v=p.variants.find(x=>x.color==='Black'&&x.size==='S')||p.variants[0];
+if(v) v.stock=nv;
+p.stock=p.variants.reduce((s,x)=>s+(Number(x.stock)||0),0);
+} else { p.stock=nv; }
+return fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
+}).then(r=>{document.getElementById('s').textContent='PUT status '+r.status; return fetch(FB+'/products.json');})
 .then(r=>r.json()).then(j=>{
 var a=Array.isArray(j)?j:Object.values(j||{});
-var c=a.find(x=>x.governorate==='Cairo');
-document.getElementById('c').textContent=c.cost;
-document.getElementById('s').textContent='القاهرة بقت '+c.cost+' في Firebase بجد';
+var p=a[0];
+var v=(p.variants||[]).find(x=>x.color==='Black'&&x.size==='S')||(p.variants||[])[0];
+document.getElementById('cur').textContent=v?v.stock:p.stock;
+document.getElementById('s').textContent='المخزون بقى '+(v?v.stock:p.stock)+' في Firebase بجد';
 });
 }
 </script>
