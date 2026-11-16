@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TEST</title></head>
+<body style="background:#000;color:#fff;font-family:sans-serif;padding:20px">
+<h1>TEST شغال</h1>
+<p>القاهرة في Firebase: <b id="c">...</b></p>
+<input id="v" type="number" value="63" style="font-size:22px;padding:10px">
+<br><br>
+<button onclick="save()" style="font-size:20px;padding:14px;background:#22c55e;border:none;border-radius:10px">حفظ</button>
+<p id="s"></p>
+<script>
+var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
+fetch(FB+'/shipping.json').then(r=>r.json()).then(j=>{
+var a=Array.isArray(j)?j:Object.values(j||{});
+var c=a.find(x=>x.governorate==='Cairo');
+document.getElementById('c').textContent=c?c.cost:'مش لاقي';
+});
+function save(){
+var nv=Number(document.getElementById('v').value);
+document.getElementById('s').textContent='بحفظ...';
+fetch(FB+'/shipping.json').then(r=>r.json()).then(j=>{
+var a=Array.isArray(j)?j:Object.values(j||{});
+a=a.map(x=>x.governorate==='Cairo'?{governorate:'Cairo',cost:nv}:x);
+return fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
+}).then(r=>{document.getElementById('s').textContent='PUT status '+r.status; return fetch(FB+'/shipping.json');})
+.then(r=>r.json()).then(j=>{
+var a=Array.isArray(j)?j:Object.values(j||{});
+var c=a.find(x=>x.governorate==='Cairo');
+document.getElementById('c').textContent=c.cost;
+document.getElementById('s').textContent='القاهرة بقت '+c.cost+' في Firebase بجد';
+});
+}
+</script>
+</body></html>
