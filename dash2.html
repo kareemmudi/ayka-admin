@@ -73,7 +73,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <div id="tab-categories" class="hidden"></div>
 <div id="tab-settings" class="hidden"></div>
 </div>
-<div class="savebar"><div><span id="saveStatus" style="font-size:12px;color:#888">✅ كل التغييرات محفوظة</span><div style="font-size:10px;color:#666">V14 - صور منفصلة + مخزون من الاتنين + شحن ثابت + واتساب - حفظ واحد + مسح صورة + الوان/مقاسات للمتجر - FIX شحن + صورة + اضافة - صور رئيسية + جاليري + الوان/مقاسات + شحن ثابت - Firebase فقط - مفيش GAS - الخصم مرة واحدة بس من Firebase</div></div><button class="btn" onclick="saveAll()">✅ حفظ التغييرات</button></div>
+<div class="savebar"><div><span id="saveStatus" style="font-size:12px;color:#888">✅ كل التغييرات محفوظة</span><div style="font-size:10px;color:#666">V15 - mainImage/gallery زي المتجر + ضغط صور - صور منفصلة + مخزون من الاتنين + شحن ثابت + واتساب - حفظ واحد + مسح صورة + الوان/مقاسات للمتجر - FIX شحن + صورة + اضافة - صور رئيسية + جاليري + الوان/مقاسات + شحن ثابت - Firebase فقط - مفيش GAS - الخصم مرة واحدة بس من Firebase</div></div><button class="btn" onclick="saveAll()">✅ حفظ التغييرات</button></div>
 </div>
 <script>
 var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
@@ -155,7 +155,7 @@ function editProduct(pi){
   if(el.classList.contains('hidden')) return;
   el.innerHTML='<div class="grid2"><div><label>الاسم</label><input id="e-name-'+pi+'" value="'+(p.name||'')+'"></div><div><label>السعر</label><input id="e-price-'+pi+'" type="number" value="'+(p.price||0)+'"></div><div><label>سعر الخصم Discount Price</label><input id="e-disc-'+pi+'" type="number" value="'+(p.discountPrice||'')+'"></div><div><label>القسم - اختار من القايمة</label><select id="e-cat-'+pi+'" onchange="catChanged('+pi+',this.value)"><option value="CLOTHING">CLOTHING - ملابس</option><option value="SHOES">SHOES - شوزات</option><option value="BAGS">BAGS - شنط</option><option value="ACCESSORIES">ACCESSORIES - اكسسوارات</option><option value="ENTERTAINMENT">ENTERTAINMENT - ترفيه</option><option value="__custom">+ قسم جديد...</option></select><input id="e-cat-custom-'+pi+'" placeholder="اكتب قسم جديد" style="display:none;margin-top:6px"><div class="small">القسم الحالي: '+(p.category||'')+' - لو اخترت قسم من القايمة هيتطبق، لو كتبت قسم جديد هيتضاف</div></div></div><label>الوصف</label><textarea id="e-desc-'+pi+'" rows="3">'+(p.description||'')+'</textarea><label>المقاسات - دوس عشان تختار</label><div class="chipBox" id="sizes-box-'+pi+'"></div><button type="button" class="btnG" onclick="addSizePrompt('+pi+')">+ مقاس جديد</button><label style="margin-top:8px">المقاسات (بفاصلة)</label><input id="e-sizes-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.size;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الالوان - دوس عشان تختار، مش لازم تكتب</label><div class="chipBox" id="colors-box-'+pi+'"></div><button type="button" class="btnG" onclick="addColorPrompt('+pi+')">+ لون جديد</button><label style="margin-top:8px">الالوان (بفاصلة) - بتتملي لوحدها من الاختيارات</label><input id="e-colors-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.color;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الصورة الرئيسية - اللي هتظهر في واجهة المتجر</label><div style="border:2px dashed #22c55e;border-radius:12px;padding:14px;text-align:center;margin:6px 0"><div style="font-size:24px">🖼️</div><div style="font-weight:bold">ارفع الصورة الرئيسية من معرض الجهاز</div><input type="file" accept="image/*" onchange="uploadImg(event,'+pi+')" style="border:none;margin-top:6px"></div><input id="e-img-'+pi+'" placeholder="لو عندك لينك صورة حطه هنا (اختياري)" value="'+(p.image||p.img||'')+'" style="display:none"><div class="small">ارفع من معرض جهازك، الصورة هتتحط كصورة رئيسية على طول</div><label style="margin-top:10px">باقي الصور - الجاليري (ممكن اكتر من 10 صور)</label><div style="border:2px dashed #3B82F6;border-radius:12px;padding:16px;text-align:center;margin:6px 0"><div style="font-size:28px">📸</div><div style="font-weight:bold;margin:6px 0">ارفع من معرض الجهاز</div><input type="file" accept="image/*" multiple onchange="uploadGallery(event,'+pi+')" style="border:none"><div class="small">دوس واختار اكتر من صورة من معرض جهازك في نفس الوقت - مش لازم لينك</div></div><div id="gallery-preview-'+pi+'" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div><textarea id="e-gallery-'+pi+'" rows="2" style="display:none"> '+((p.gallery||p.images||[]).join('\n'))+'</textarea><div class="small">الصور اللي هترفعها هتظهر هنا، وهي اللي هتظهر جوه صفحة المنتج في المتجر</div><label style="margin-top:10px">المخزون لكل لون + مقاس - ده اللي بيخلي المتجر يخليك تختار اللون والمقاس</label><div id="variants-box-'+pi+'"></div><button type="button" class="btnG" onclick="buildVariants('+pi+')">🔄 حدّث جدول المقاسات / الألوان</button><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="saveEdit('+pi+')">حفظ المنتج ده</button><button class="btnG" onclick="document.getElementById(\'edit-'+pi+'\').classList.add(\'hidden\')">الغاء</button></div>';
 }
-function uploadImg(e,pi){ var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var p=products[pi]; p.mainImage=r.result; p.image=r.result; p.img=r.result; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; var combined=[r.result]; p.gallery.forEach(function(u){ if(u!==r.result) combined.push(u); }); p.images=combined; markDirty(); var card=document.querySelectorAll('#tab-products .prod img')[pi]; if(card) card.src=r.result; var prev=document.getElementById('gallery-preview-'+pi); renderGalleryPreview(pi); }; r.readAsDataURL(f); }
+function uploadImg(e,pi){ var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ compressImage(r.result, function(comp){ var p=products[pi]; p.mainImage=comp; p.image=comp; p.img=comp; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; var combined=[comp]; p.gallery.forEach(function(u){ if(u!==r.result) combined.push(u); }); p.images=combined; markDirty(); var card=document.querySelectorAll('#tab-products .prod img')[pi]; if(card) card.src=r.result; var prev=document.getElementById('gallery-preview-'+pi); renderGalleryPreview(pi); }); }; r.readAsDataURL(f); }
 function syncEditToProduct(pi){
   var p=products[pi]; if(!p) return p;
   var el=function(id){ return document.getElementById(id); };
@@ -166,16 +166,16 @@ function syncEditToProduct(pi){
   if(el('e-desc-'+pi)) p.description=el('e-desc-'+pi).value;
   // Colors / Sizes from chips inputs
   var colors=getColors(pi); var sizes=getSizes(pi);
-  if(colors.length) p.colors=colors; if(sizes.length) p.sizes=sizes;
+  if(colors.length) p.colors=colors; if(sizes.length) p.sizes=sizes; p.sizes=(p.sizes||[]).map(function(s){return String(s).trim();}); p.colors=(p.colors||[]).map(function(c){return String(c).trim();});
   // Variants: read the table the user just edited (the 5s) - NOT old stock
   var vars=collectVariants(pi);
   if(vars.length){ p.variants=vars; var tot=0; vars.forEach(function(v){ tot+=Number(v.stock)||0; }); p.stock=tot; }
   // V14 Images: main SEPARATE from gallery - main never overwritten by gallery
   if(p.mainImage) { p.image=p.mainImage; p.img=p.mainImage; }
   else if(p.image) { p.mainImage=p.image; }
-  var gal = p.gallery||[];
+  var gal = (p.gallery||[]).filter(function(u){ return typeof u==='string' && u.startsWith('data:'); }); p.gallery=gal;
   // images for store = [main, ...gallery] but main stays first
-  var combined=[]; if(p.mainImage) combined.push(p.mainImage); gal.forEach(function(u){ if(u!==p.mainImage) combined.push(u); });
+  var combined=[]; if(p.mainImage && typeof p.mainImage==='string' && p.mainImage.startsWith('data:')) combined.push(p.mainImage); gal.forEach(function(u){ if(u!==p.mainImage) combined.push(u); });
   p.images=combined; p.gallery=gal; p.img=p.mainImage||p.image;
   // Also keep emoji for old store compat
   if(!p.emoji) p.emoji='👕';
@@ -254,6 +254,20 @@ function waConfirm(orderId){
 }
 
 function injectWaButtons(){ try{ document.querySelectorAll('#tab-orders .card').forEach(function(card,idx){ if(card.querySelector('.wa-btn')) return; var o=orders[idx]; if(!o) return; var btn=document.createElement('button'); btn.className='btnG wa-btn'; btn.style.cssText='background:#22c55e;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:bold;cursor:pointer;margin:4px'; btn.textContent='📱 تأكيد واتساب'; btn.onclick=(function(id){ return function(){ waConfirm(id); }; })(o.id); card.appendChild(btn); }); }catch(e){} }
+
+function compressImage(dataUrl, cb){
+  try{
+    var img=new Image(); img.onload=function(){
+      var max=900; var w=img.width, h=img.height;
+      if(w>max){ h=Math.round(h*max/w); w=max; }
+      if(h>max){ w=Math.round(w*max/h); h=max; }
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      var ctx=c.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.72));
+    }; img.onerror=function(){ cb(dataUrl); }; img.src=dataUrl;
+  }catch(e){ cb(dataUrl); }
+}
+
 function catChanged(pi,val){ var el=document.getElementById('e-cat-custom-'+pi); if(el) el.style.display = (val==='__custom'?'block':'none'); }
 function getColors(pi){ var v=document.getElementById('e-colors-'+pi).value||''; return v.split(',').map(function(s){return s.trim()}).filter(Boolean); }
 function getSizes(pi){ var v=document.getElementById('e-sizes-'+pi).value||''; return v.split(',').map(function(s){return s.trim()}).filter(Boolean); }
@@ -274,7 +288,7 @@ function buildVariants(pi){
   h+='</table><div class="small">كل لون + مقاس ليه مخزون لوحده، عشان المتجر يخليك تختارهم، ومايقولش Variant not found</div>';
   box.innerHTML=h;
 }
-function uploadGallery(e,pi){ var files=e.target.files; if(!files.length) return; var prev=document.getElementById('gallery-preview-'+pi); var p=products[pi]; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; if(!p.mainImage && p.image) p.mainImage=p.image; Array.from(files).forEach(function(f){ var r=new FileReader(); r.onload=function(ev){ p.gallery.push(ev.target.result); var ta=document.getElementById('e-gallery-'+pi); if(ta) ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+ev.target.result; renderGalleryPreview(pi); markDirty(); }; r.readAsDataURL(f); }); }
+function uploadGallery(e,pi){ var files=e.target.files; if(!files.length) return; var prev=document.getElementById('gallery-preview-'+pi); var p=products[pi]; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; if(!p.mainImage && p.image) p.mainImage=p.image; Array.from(files).forEach(function(f){ var r=new FileReader(); r.onload=function(ev){ compressImage(ev.target.result, function(comp){ var ev2={target:{result:comp}}; (function(ev){ p.gallery.push(ev2.target.result); var ta=document.getElementById('e-gallery-'+pi); if(ta) ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+ev2.target.result; renderGalleryPreview(pi); markDirty(); }); })(ev2); }; r.readAsDataURL(f); }); }
 function collectVariants(pi){ var colors=getColors(pi); var sizes=getSizes(pi); if(!colors.length) colors=['Black']; if(!sizes.length) sizes=['One Size']; var out=[]; colors.forEach(function(c){ sizes.forEach(function(s){ var el=document.getElementById('var-'+pi+'-'+encodeURIComponent(c)+'-'+encodeURIComponent(s)); var st=el?parseInt(el.value||0):0; out.push({color:c,size:s,stock:st}); }); }); return out; }
 
 async function saveAll(){
@@ -299,7 +313,7 @@ async function saveAll(){
 }
 try{ if(new URLSearchParams(location.search).get('admin')==='ayka2026'){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.remove('hidden'); init(); } }catch(e){}
 </script>
-<!-- FIX V10.1 + V14 - صور منفصلة + مخزون من الاتنين + شحن ثابت + واتساب - حفظ واحد + مسح صورة + الوان/مقاسات للمتجر - اضافة تفتح الفورم + المسح يفضل ممسوح + الشحن ميرجعش -->
+<!-- FIX V10.1 + V15 - mainImage/gallery زي المتجر + ضغط صور - صور منفصلة + مخزون من الاتنين + شحن ثابت + واتساب - حفظ واحد + مسح صورة + الوان/مقاسات للمتجر - اضافة تفتح الفورم + المسح يفضل ممسوح + الشحن ميرجعش -->
 <script>
 (function(){
   // 1 - اضافة منتج: افتح الفورم على طول وانزل له
