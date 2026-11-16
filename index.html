@@ -3223,7 +3223,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 <!-- AYKA FIREBASE V9 - FIX DUPLICATE - Order by ID, no loop -->
-<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIX V10 - SAVE FROM INPUTS - OLD TABS MUST BE CLOSED - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
+<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIX V11 - SAVE LIKE test2.html - GET THEN PUT - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
 <div style="height:28px;"></div>
 <script>
 (function(){
@@ -3385,7 +3385,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 <div id="ayka-save-bar" style="position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#111113; border-top:1px solid #222; padding:10px 12px; display:flex; gap:8px; align-items:center; justify-content:space-between; font-family:sans-serif; box-shadow:0 -4px 20px rgba(0,0,0,0.5);">
   <div style="font-size:12px; color:#fff;">
     <span id="ayka-save-status" style="color:#888;">✅ كل التغييرات محفوظة</span>
-    <div style="font-size:10px; color:#666; margin-top:2px;">FIX V10 - المخزون / الأسعار / الخصومات - لو مش شايف FIX V10 فوق، يبقى الملف القديم لسه مفتوح</div>
+    <div style="font-size:10px; color:#666; margin-top:2px;">FIX V11 - المخزون / الأسعار / الخصومات - لو مش شايف FIX V11 فوق، يبقى الملف القديم لسه مفتوح</div>
   </div>
   <button id="ayka-save-btn" style="background:#22c55e; color:#000; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer; white-space:nowrap;">💾 حفظ التغييرات</button>
 </div>
@@ -3446,49 +3446,36 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       if(!res.ok) throw new Error('Firebase failed');
       // Also save back corrected totals to localStorage
       try{ localStorage.setItem('ayka_products', JSON.stringify(products)); }catch(e){}
-      // FIX REFRESH BUG - CORE: read shipping from the INPUTS on screen, NOT from localStorage.
-      // localStorage may have just been overwritten by the poll with old Firebase data (50).
-      // The inputs show what YOU typed (60). That is the truth.
+      // FIX - SAME METHOD AS test2.html THAT JUST WORKED (Cairo 80 -> 63):
+      // 1. GET full shipping from Firebase (so governorate names/order are correct)
+      // 2. Overwrite ONLY the costs with what YOU typed in the inputs, by INDEX order (input[0]=Cairo, [1]=Giza...)
+      // 3. PUT the full array back. Never build the array from DOM names, never read from localStorage.
       try{
         await new Promise(r=>setTimeout(r, 400));
-        let shipFromDOM = null;
-        try{
-          let inputs = Array.from(document.querySelectorAll('input[data-cost]'));
-          if(inputs.length > 0){
-            shipFromDOM = inputs.map(inp => {
-              let row = inp.closest('div');
-              let govEl = row && row.parentElement ? row.parentElement.querySelector('span') : null;
-              // The governorate name is the <span> sibling in the same row container
-              let gov = '';
-              let container = inp.closest('div.flex');
-              if(container){ let s = container.parentElement ? container.parentElement.querySelector('span') : null; if(s) gov = s.textContent.trim(); }
-              if(!gov && govEl) gov = govEl.textContent.trim();
-              return { governorate: gov, cost: Number(inp.value) };
-            }).filter(x => x.governorate);
-            // Fallback: if governorate names not found, use localStorage order + DOM values
-            if(shipFromDOM.length === 0) shipFromDOM = null;
+        let inputs = Array.from(document.querySelectorAll('input[data-cost]'));
+        console.log('AYKA FIX: found DOM shipping inputs', inputs.length);
+        let gr = await fetch(FB + '/shipping.json?ts=' + Date.now());
+        let gj = await gr.json();
+        let arr = Array.isArray(gj) ? gj.slice() : Object.values(gj || {});
+        console.log('AYKA FIX: GET shipping from Firebase', JSON.stringify(arr).slice(0,200));
+        if(inputs.length > 0 && arr.length > 0){
+          // Map by index - React renders shipping in the same order as Firebase array
+          for(let i=0;i<Math.min(inputs.length, arr.length);i++){
+            let v = Number(inputs[i].value);
+            if(!isNaN(v)) arr[i] = { ...arr[i], cost: v };
           }
-        }catch(e){ shipFromDOM = null; }
-        let shipJson2 = null;
-        if(shipFromDOM && shipFromDOM.length > 0){
-          shipJson2 = JSON.stringify(shipFromDOM);
-          // Also fix localStorage to match what you typed, so refresh reads the new value
+          let shipJson2 = JSON.stringify(arr);
           try{ localStorage.setItem('ayka_v2_shipping', shipJson2); }catch(e){}
-          console.log('AYKA FIX: Shipping read from DOM inputs', shipJson2.slice(0,200));
-        } else {
-          shipJson2 = localStorage.getItem('ayka_v2_shipping');
-          console.log('AYKA FIX: No DOM inputs found, fallback to localStorage');
-        }
-        if(shipJson2){
           let sres = await fetch(FB + '/shipping.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: shipJson2});
           console.log('AYKA FIX: Shipping PUT status', sres.status);
-          // VERIFY: re-fetch from Firebase and show what actually stuck
-          try{
-            let verify = await fetch(FB + '/shipping.json?ts=' + Date.now());
-            let vj = await verify.json();
-            console.log('AYKA FIX: Shipping VERIFY from Firebase', JSON.stringify(vj).slice(0,200));
-            window.__ayka_lastSavedShippingJson = JSON.stringify(vj);
-          }catch(e){}
+          let vr = await fetch(FB + '/shipping.json?ts=' + Date.now());
+          let vj = await vr.json();
+          let varr = Array.isArray(vj) ? vj : Object.values(vj || {});
+          let vc = varr.find(x=>x.governorate==='Cairo');
+          console.log('AYKA FIX: VERIFY Cairo in Firebase now', vc ? vc.cost : '?');
+          window.__ayka_lastSavedShippingJson = JSON.stringify(vj);
+        } else {
+          console.log('AYKA FIX: no inputs or no Firebase shipping, skipping shipping save');
         }
       }catch(e){ console.log('Shipping save failed', e); }
 
