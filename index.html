@@ -3686,4 +3686,45 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
     bar.appendChild(b);
   }
 })();
-</script></body></html>
+</script>
+<!-- FIX V13 - اقرا من الشاشة مش من الذاكرة -->
+<script>
+(function(){
+  var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
+  var bar=document.getElementById('ayka-save-bar');
+  if(!bar) return;
+  var b=document.createElement('button');
+  b.textContent='🟢 حفظ من الشاشة V13';
+  b.style='background:#facc15;color:#000;border:none;padding:12px 16px;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer;margin-right:8px';
+  b.onclick=function(){
+    b.textContent='⏳ بحفظ من الشاشة...';
+    // هات كل خانات المخزون اللي ظاهرة في صفحة المخزون بالترتيب
+    var allInputs=Array.from(document.querySelectorAll('input')).filter(function(i){
+      return i.offsetParent!==null && /^\d+$/.test(i.value.trim());
+    });
+    // اول منتج هو Obsidian - اول 15 خانة
+    var obsValues=allInputs.slice(0,15).map(function(i){return Number(i.value)||0;});
+    if(obsValues.length<5){ b.textContent='❌ مش لاقي الخانات - افتح المخزون'; return; }
+    fetch(FB+'/products.json?ts='+Date.now()).then(function(r){return r.json();}).then(function(fb){
+      var arr=Array.isArray(fb)?fb:Object.values(fb||{});
+      var idx=arr.findIndex(function(p){return (p.name||'').toLowerCase().indexOf('obsidian')>-1;});
+      if(idx===-1) idx=0;
+      var p=arr[idx];
+      if(p.variants && p.variants.length===obsValues.length){
+        p.variants=p.variants.map(function(v,i){ var o=Object.assign({},v); o.stock=obsValues[i]; return o; });
+      }
+      p.stock=obsValues.reduce(function(s,x){return s+x;},0);
+      arr[idx]=p;
+      window.__ayka_allowProductPut=true;
+      return fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr)}).then(function(r){
+        window.__ayka_allowProductPut=false; return r;
+      });
+    }).then(function(r){
+      b.textContent='✅ اتحفظ من الشاشة '+r.status;
+      setTimeout(function(){b.textContent='🟢 حفظ من الشاشة V13';},4000);
+    }).catch(function(e){ b.textContent='❌ '+e.message; });
+  };
+  bar.appendChild(b);
+})();
+</script>
+</body></html>
