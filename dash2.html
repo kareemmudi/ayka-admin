@@ -48,7 +48,7 @@ label{font-size:11px;color:#888;letter-spacing:1px;display:block;margin-bottom:4
 .small{font-size:12px;color:#888}.row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a1a}
 .badge{font-size:11px;background:#222;padding:4px 10px;border-radius:20px}
 .badgeP{background:#f59e0b;color:#000}.badgeC{background:#22c55e;color:#000}
-.savebar{position:fixed;bottom:0;left:0;right:0;background:#111113;border-top:1px solid #222;padding:12px 16px;display:flex;gap:8px;justify-content:space-between;align-items:center;z-index:99}
+.chip{display:inline-block;padding:8px 12px;border:1px solid #333;border-radius:20px;margin:3px;cursor:pointer;font-size:13px;background:#0a0a0b}.chip.on{background:#3B82F6;border-color:#3B82F6;color:#fff}.chipBox{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.savebar{position:fixed;bottom:0;left:0;right:0;background:#111113;border-top:1px solid #222;padding:12px 16px;display:flex;gap:8px;justify-content:space-between;align-items:center;z-index:99}
 .login{max-width:420px;margin:70px auto;text-align:center;padding:20px}.hidden{display:none}
 .prod{display:flex;gap:12px}.prod img{width:90px;height:90px;object-fit:cover;border-radius:12px;background:#000;border:1px solid #222}
 table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #222;text-align:right;font-size:13px}
@@ -73,7 +73,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <div id="tab-categories" class="hidden"></div>
 <div id="tab-settings" class="hidden"></div>
 </div>
-<div class="savebar"><div><span id="saveStatus" style="font-size:12px;color:#888">✅ كل التغييرات محفوظة</span><div style="font-size:10px;color:#666">V10 FINAL - Firebase فقط - مفيش GAS - الخصم مرة واحدة بس من Firebase</div></div><button class="btn" onclick="saveAll()">✅ حفظ التغييرات</button></div>
+<div class="savebar"><div><span id="saveStatus" style="font-size:12px;color:#888">✅ كل التغييرات محفوظة</span><div style="font-size:10px;color:#666">V11 - صور رئيسية + جاليري + الوان/مقاسات + شحن ثابت - Firebase فقط - مفيش GAS - الخصم مرة واحدة بس من Firebase</div></div><button class="btn" onclick="saveAll()">✅ حفظ التغييرات</button></div>
 </div>
 <script>
 var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
@@ -97,12 +97,14 @@ async function init(){
 }
 async function loadAll(){
   var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]);
-  var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var sh=await r2.json(); if(sh) shipping=sh; else shipping={}; GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
+  var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var _sh2=null; try{ var _r2b=await fetch(FB+'/settings/shipping.json?ts='+Date.now()); _sh2=await _r2b.json(); }catch(e){}
+  try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',body:JSON.stringify(shipping)}); await fetch(FB+'/shippingRates.json',{method:'PUT',body:JSON.stringify(shipping)}); }catch(e){} var sh=await r2.json(); if(sh) shipping=sh; else shipping={}; if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
   syncShippingToStorage();
   var r3=await fetch(FB+'/orders.json?ts='+Date.now()); orders=await r3.json(); if(!Array.isArray(orders)) orders=Object.values(orders||[]);
   var r4=await fetch(FB+'/settings.json?ts='+Date.now()); var st=await r4.json(); if(st) settings=Object.assign(settings, st);
   categories=[]; products.forEach(function(p){ if(p.category && categories.indexOf(p.category)===-1) categories.push(p.category); });
   renderAll();
+  setTimeout(function(){ products.forEach(function(_,pi){ try{renderChips(pi);}catch(e){} }); },300);
 }
 async function pollOrders(){
   if(dirty) return; // حماية: لو بتعدل، ميكتبش فوق تعديلك قبل ما تدوس حفظ
@@ -151,7 +153,7 @@ function renderProducts(){
 function editProduct(pi){
   var p=products[pi]; var el=document.getElementById('edit-'+pi); el.classList.toggle('hidden');
   if(el.classList.contains('hidden')) return;
-  el.innerHTML='<div class="grid2"><div><label>الاسم</label><input id="e-name-'+pi+'" value="'+(p.name||'')+'"></div><div><label>السعر</label><input id="e-price-'+pi+'" type="number" value="'+(p.price||0)+'"></div><div><label>سعر الخصم Discount Price</label><input id="e-disc-'+pi+'" type="number" value="'+(p.discountPrice||'')+'"></div><div><label>القسم</label><input id="e-cat-'+pi+'" value="'+(p.category||'')+'"></div></div><label>الوصف</label><textarea id="e-desc-'+pi+'" rows="3">'+(p.description||'')+'</textarea><label>المقاسات (بفاصلة)</label><input id="e-sizes-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.size;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الالوان (بفاصلة)</label><input id="e-colors-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.color;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>صور - رفع من الجهاز</label><input type="file" accept="image/*" onchange="uploadImg(event,'+pi+')"><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="saveEdit('+pi+')">حفظ المنتج ده</button><button class="btnG" onclick="document.getElementById(\'edit-'+pi+'\').classList.add(\'hidden\')">الغاء</button></div>';
+  el.innerHTML='<div class="grid2"><div><label>الاسم</label><input id="e-name-'+pi+'" value="'+(p.name||'')+'"></div><div><label>السعر</label><input id="e-price-'+pi+'" type="number" value="'+(p.price||0)+'"></div><div><label>سعر الخصم Discount Price</label><input id="e-disc-'+pi+'" type="number" value="'+(p.discountPrice||'')+'"></div><div><label>القسم - اختار من القايمة</label><select id="e-cat-'+pi+'" onchange="if(this.value==='__custom'){document.getElementById('e-cat-custom-'+pi).style.display='block'}"><option value="CLOTHING">CLOTHING - ملابس</option><option value="SHOES">SHOES - شوزات</option><option value="BAGS">BAGS - شنط</option><option value="ACCESSORIES">ACCESSORIES - اكسسوارات</option><option value="ENTERTAINMENT">ENTERTAINMENT - ترفيه</option><option value="__custom">+ قسم جديد...</option></select><input id="e-cat-custom-'+pi+'" placeholder="اكتب قسم جديد" style="display:none;margin-top:6px"><div class="small">القسم الحالي: '+(p.category||'')+' - لو اخترت قسم من القايمة هيتطبق، لو كتبت قسم جديد هيتضاف</div></div></div><label>الوصف</label><textarea id="e-desc-'+pi+'" rows="3">'+(p.description||'')+'</textarea><label>المقاسات - دوس عشان تختار</label><div class="chipBox" id="sizes-box-'+pi+'"></div><button type="button" class="btnG" onclick="addSizePrompt('+pi+')">+ مقاس جديد</button><label style="margin-top:8px">المقاسات (بفاصلة)</label><input id="e-sizes-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.size;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الالوان - دوس عشان تختار، مش لازم تكتب</label><div class="chipBox" id="colors-box-'+pi+'"></div><button type="button" class="btnG" onclick="addColorPrompt('+pi+')">+ لون جديد</button><label style="margin-top:8px">الالوان (بفاصلة) - بتتملي لوحدها من الاختيارات</label><input id="e-colors-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.color;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الصورة الرئيسية - اللي هتظهر في واجهة المتجر</label><div style="border:2px dashed #22c55e;border-radius:12px;padding:14px;text-align:center;margin:6px 0"><div style="font-size:24px">🖼️</div><div style="font-weight:bold">ارفع الصورة الرئيسية من معرض الجهاز</div><input type="file" accept="image/*" onchange="uploadImg(event,'+pi+')" style="border:none;margin-top:6px"></div><input id="e-img-'+pi+'" placeholder="لو عندك لينك صورة حطه هنا (اختياري)" value="'+(p.image||p.img||'')+'" style="display:none"><div class="small">ارفع من معرض جهازك، الصورة هتتحط كصورة رئيسية على طول</div><label style="margin-top:10px">باقي الصور - الجاليري (ممكن اكتر من 10 صور)</label><div style="border:2px dashed #3B82F6;border-radius:12px;padding:16px;text-align:center;margin:6px 0"><div style="font-size:28px">📸</div><div style="font-weight:bold;margin:6px 0">ارفع من معرض الجهاز</div><input type="file" accept="image/*" multiple onchange="uploadGallery(event,'+pi+')" style="border:none"><div class="small">دوس واختار اكتر من صورة من معرض جهازك في نفس الوقت - مش لازم لينك</div></div><div id="gallery-preview-'+pi+'" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div><textarea id="e-gallery-'+pi+'" rows="2" style="display:none"> '+((p.gallery||p.images||[]).join('\n'))+'</textarea><div class="small">الصور اللي هترفعها هتظهر هنا، وهي اللي هتظهر جوه صفحة المنتج في المتجر</div><label style="margin-top:10px">المخزون لكل لون + مقاس - ده اللي بيخلي المتجر يخليك تختار اللون والمقاس</label><div id="variants-box-'+pi+'"></div><button type="button" class="btnG" onclick="buildVariants('+pi+')">🔄 حدّث جدول المقاسات / الألوان</button><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="saveEdit('+pi+')">حفظ المنتج ده</button><button class="btnG" onclick="document.getElementById(\'edit-'+pi+'\').classList.add(\'hidden\')">الغاء</button></div>';
 }
 function uploadImg(e,pi){ var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ if(!products[pi].images) products[pi].images=[]; products[pi].images[0]=r.result; markDirty(); renderProducts(); }; r.readAsDataURL(f); }
 function saveEdit(pi){
@@ -209,7 +211,44 @@ function renderSettings(){
   document.getElementById('tab-settings').innerHTML='<h3>Settings</h3><div class="card"><label>اسم المتجر</label><input id="set-name" value="'+(settings.storeName||'AYKA')+'"><br><br><label>ايميل المالك</label><input id="set-email" value="'+(settings.email||'')+'"></div>';
   document.getElementById('set-name').onchange=function(){ settings.storeName=this.value; markDirty(); }; document.getElementById('set-email').onchange=function(){ settings.email=this.value; markDirty(); };
 }
+
+var PRESET_COLORS=['Black','White','Blue','Green','Grey','Beige','Brown','Red','Pink','Yellow','Orange','Purple'];
+var PRESET_SIZES=['XS','S','M','L','XL','XXL','One Size'];
+function getColors(pi){ var v=document.getElementById('e-colors-'+pi).value||''; return v.split(',').map(function(s){return s.trim()}).filter(Boolean); }
+function getSizes(pi){ var v=document.getElementById('e-sizes-'+pi).value||''; return v.split(',').map(function(s){return s.trim()}).filter(Boolean); }
+function renderChips(pi){
+  var cb=document.getElementById('colors-box-'+pi); if(cb){ var cur=getColors(pi); cb.innerHTML=''; PRESET_COLORS.forEach(function(c){ var on=cur.some(function(x){return x.toLowerCase()===c.toLowerCase()}); var d=document.createElement('span'); d.className='chip'+(on?' on':''); d.textContent=c; d.onclick=function(){ toggleChip(pi,'colors',c); }; cb.appendChild(d); }); }
+  var sb=document.getElementById('sizes-box-'+pi); if(sb){ var cur2=getSizes(pi); sb.innerHTML=''; PRESET_SIZES.forEach(function(s){ var on=cur2.some(function(x){return x.toLowerCase()===s.toLowerCase()}); var d=document.createElement('span'); d.className='chip'+(on?' on':''); d.textContent=s; d.onclick=function(){ toggleChip(pi,'sizes',s); }; sb.appendChild(d); }); }
+  buildVariants(pi);
+}
+function toggleChip(pi,kind,val){ var id=kind==='colors'?'e-colors-'+pi:'e-sizes-'+pi; var el=document.getElementById(id); var arr=el.value.split(',').map(function(s){return s.trim()}).filter(Boolean); var idx=arr.findIndex(function(x){return x.toLowerCase()===val.toLowerCase()}); if(idx>=0) arr.splice(idx,1); else arr.push(val); el.value=arr.join(','); renderChips(pi); markDirty(); }
+function addColorPrompt(pi){ var c=prompt('اكتب لون جديد:'); if(c){ var el=document.getElementById('e-colors-'+pi); var a=el.value.split(',').map(function(s){return s.trim()}).filter(Boolean); a.push(c.trim()); el.value=a.join(','); if(PRESET_COLORS.indexOf(c.trim())===-1) PRESET_COLORS.push(c.trim()); renderChips(pi); } }
+function addSizePrompt(pi){ var s=prompt('اكتب مقاس جديد:'); if(s){ var el=document.getElementById('e-sizes-'+pi); var a=el.value.split(',').map(function(s2){return s2.trim()}).filter(Boolean); a.push(s.trim()); el.value=a.join(','); renderChips(pi); } }
+function buildVariants(pi){
+  var box=document.getElementById('variants-box-'+pi); if(!box) return;
+  var colors=getColors(pi); var sizes=getSizes(pi); if(!colors.length) colors=['Black']; if(!sizes.length) sizes=['One Size'];
+  var p=products[pi]||{}; var old={}; (p.variants||[]).forEach(function(v){ old[(v.color+'|'+v.size).toLowerCase()] = v.stock||0; });
+  var h='<table><tr><th>اللون</th><th>المقاس</th><th>المخزون</th></tr>';
+  colors.forEach(function(c){ sizes.forEach(function(s){ var k=(c+'|'+s).toLowerCase(); var st=old[k]!=null?old[k]:(p.stock||0); h+='<tr><td>'+c+'</td><td>'+s+'</td><td><input class="num" type="number" id="var-'+pi+'-'+encodeURIComponent(c)+'-'+encodeURIComponent(s)+'" value="'+st+'"></td></tr>'; }); });
+  h+='</table><div class="small">كل لون + مقاس ليه مخزون لوحده، عشان المتجر يخليك تختارهم، ومايقولش Variant not found</div>';
+  box.innerHTML=h;
+}
+function uploadGallery(e,pi){ var files=e.target.files; if(!files.length) return; var prev=document.getElementById('gallery-preview-'+pi); Array.from(files).forEach(function(f){ var r=new FileReader(); r.onload=function(ev){ var ta=document.getElementById('e-gallery-'+pi); ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+ev.target.result; if(prev){ var im=document.createElement('img'); im.src=ev.target.result; im.style.cssText='width:70px;height:70px;object-fit:cover;border-radius:10px;border:1px solid #333'; prev.appendChild(im); } markDirty(); }; r.readAsDataURL(f); }); }
+function collectVariants(pi){ var colors=getColors(pi); var sizes=getSizes(pi); if(!colors.length) colors=['Black']; if(!sizes.length) sizes=['One Size']; var out=[]; colors.forEach(function(c){ sizes.forEach(function(s){ var el=document.getElementById('var-'+pi+'-'+encodeURIComponent(c)+'-'+encodeURIComponent(s)); var st=el?parseInt(el.value||0):0; out.push({color:c,size:s,stock:st}); }); }); return out; }
+
 async function saveAll(){
+
+  // V11: sync product forms -> products (category, image, gallery, variants) before save
+  try{
+    products.forEach(function(p,pi){
+      var catEl=document.getElementById('e-cat-'+pi); if(catEl){ var cv=catEl.value; if(cv==='__custom'){ var cc=document.getElementById('e-cat-custom-'+pi); if(cc && cc.value.trim()) p.category=cc.value.trim(); } else if(cv) p.category=cv; }
+      var imgEl=document.getElementById('e-img-'+pi); if(imgEl && imgEl.value.trim()){ p.image=imgEl.value.trim(); p.img=p.image; }
+      var gEl=document.getElementById('e-gallery-'+pi); if(gEl){ var gl=gEl.value.split('\n').map(function(s){return s.trim()}).filter(Boolean); p.gallery=gl; p.images=gl; }
+      var cEl=document.getElementById('e-colors-'+pi); var sEl=document.getElementById('e-sizes-'+pi);
+      if(cEl||sEl){ var vars=collectVariants(pi); if(vars.length){ p.variants=vars; p.colors=getColors(pi); p.sizes=getSizes(pi); var tot=0; vars.forEach(function(v){tot+=v.stock;}); p.stock=tot; } }
+    });
+  }catch(e){}
+
   var btn=document.querySelector('.savebar .btn'); btn.textContent='⏳ بحفظ...';
   // استنى 400ms عشان React / الداتا تخلص حفظ في localStorage
   await new Promise(function(res){ setTimeout(res, 400); });
@@ -228,33 +267,4 @@ async function saveAll(){
 }
 try{ if(new URLSearchParams(location.search).get('admin')==='ayka2026'){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.remove('hidden'); init(); } }catch(e){}
 </script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
-<!-- FIX V10.1 - المسح والاضافة -->
-<script>
-(function(){
-  // 1 - اضافة منتج: افتح الفورم على طول وانزل له
-  window.addProduct = function(){
-    products.push({id:Date.now(),name:'منتج جديد',price:0,discountPrice:'',description:'',category:categories[0]||'',stock:0,images:[],variants:[{size:'S',color:'Black',stock:0},{size:'M',color:'Black',stock:0},{size:'L',color:'Black',stock:0}]});
-    markDirty(); renderAll(); showTab('products');
-    setTimeout(function(){
-      var idx=products.length-1;
-      editProduct(idx);
-      var el=document.getElementById('edit-'+idx);
-      if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
-    },200);
-  };
-  // 2 - حفظ: اللي عندك في الشاشة هو الصح - لو مسحت، يتمسح بجد، مترجعوش تاني
-  window.saveAll = async function(){
-    var btn=document.querySelector('.savebar .btn'); btn.textContent='⏳ بحفظ...';
-    await new Promise(function(res){ setTimeout(res, 400); });
-    try{ var ls=JSON.parse(localStorage.getItem('ayka_v2_shipping')||'{}'); if(Object.keys(ls).length) shipping=Object.assign(shipping, ls); }catch(e){}
-    // مفيش دمج مع Firebase - اللي في الشاشة هو الحقيقة، لو مسحت يفضل ممسوح
-    var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(products)});
-    var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipping)});
-    try{ await fetch(FB+'/settings.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)}); }catch(e){}
-    dirty=false; document.getElementById('saveStatus').textContent='✅ اتحفظ - منتجات '+res1.status+' - شحن '+res2.status; document.getElementById('saveStatus').style.color='#22c55e'; btn.textContent='✅ حفظ التغييرات';
-    syncShippingToStorage();
-    // متعملش loadAll بعد الحفظ - هو اللي كان بيرجع الممسوح
-  };
-})();
-</script>
 </body></html>
