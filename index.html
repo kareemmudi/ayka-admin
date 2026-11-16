@@ -3223,7 +3223,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 
 
 <!-- AYKA FIREBASE V9 - FIX DUPLICATE - Order by ID, no loop -->
-<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIX V11 - SAVE LIKE test2.html - GET THEN PUT - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
+<div id="ayka-v7-banner" style="position:fixed; top:0; left:0; right:0; z-index:99999; background:#22c55e; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:6px; font-family:sans-serif;">✅ FIX V12 - SAVE LIKE test2.html - GET THEN PUT - <span id="ayka-v7-status">FIREBASE FAILED ❌ Load failed</span> | Orders: <span id="ayka-v7-orders">-</span> | Products: <span id="ayka-v7-products">-</span></div>
 <div style="height:28px;"></div>
 <script>
 (function(){
@@ -3385,7 +3385,7 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
 <div id="ayka-save-bar" style="position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#111113; border-top:1px solid #222; padding:10px 12px; display:flex; gap:8px; align-items:center; justify-content:space-between; font-family:sans-serif; box-shadow:0 -4px 20px rgba(0,0,0,0.5);">
   <div style="font-size:12px; color:#fff;">
     <span id="ayka-save-status" style="color:#888;">✅ كل التغييرات محفوظة</span>
-    <div style="font-size:10px; color:#666; margin-top:2px;">FIX V11 - المخزون / الأسعار / الخصومات - لو مش شايف FIX V11 فوق، يبقى الملف القديم لسه مفتوح</div>
+    <div style="font-size:10px; color:#666; margin-top:2px;">FIX V12 - المخزون / الأسعار / الخصومات - لو مش شايف FIX V12 فوق، يبقى الملف القديم لسه مفتوح</div>
   </div>
   <button id="ayka-save-btn" style="background:#22c55e; color:#000; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer; white-space:nowrap;">💾 حفظ التغييرات</button>
 </div>
@@ -3442,6 +3442,36 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
         return p;
       });
       setSaveStatus('⏳ جاري الحفظ...', '#3B82F6');
+      // FIX V12 - PRODUCTS LIKE TEST PAGE: GET fresh from Firebase, merge your edits on top, then PUT.
+      // Old code PUT localStorage directly - if localStorage was stale (poll / deduct overwrote it), it re-saved old stock.
+      // Merge: for each product you edited (in localStorage), use your version; for others, use fresh Firebase version.
+      try{
+        let fr = await fetch(FB + '/products.json?ts=' + Date.now());
+        let fresh = await fr.json();
+        let freshArr = Array.isArray(fresh) ? fresh : Object.values(fresh||{});
+        if(freshArr.length>0){
+          let editedById = {};
+          products.forEach(pp=>{ if(pp && pp.id!=null) editedById[String(pp.id)] = pp; });
+          // Also match by name for products without id
+          let merged = freshArr.map(fp=>{
+            let key = fp && fp.id!=null ? String(fp.id) : '';
+            let ed = editedById[key];
+            if(ed) return ed;
+            // Try name match
+            let byName = products.find(pp=>pp && pp.name && fp && fp.name && pp.name===fp.name);
+            if(byName) return byName;
+            return fp;
+          });
+          // Add any edited products not in fresh (new products you added)
+          products.forEach(pp=>{
+            if(pp && !merged.find(m=> (m.id!=null && pp.id!=null && String(m.id)===String(pp.id)) || (m.name && pp.name && m.name===pp.name) )){
+              merged.push(pp);
+            }
+          });
+          products = merged;
+          console.log('AYKA FIX V12: Merged products, fresh=', freshArr.length, 'merged=', merged.length);
+        }
+      }catch(e){ console.log('AYKA FIX V12: fresh fetch failed, using localStorage products', e); }
       let res = await fetch(FB + '/products.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(products)});
       if(!res.ok) throw new Error('Firebase failed');
       // Also save back corrected totals to localStorage
@@ -3518,6 +3548,9 @@ Date: ${new Date(o.date).toLocaleString()}`),className:"bg-[#1a1a1d] hover:bg-[#
       try{ localStorage.setItem('ayka_deducted_ids', JSON.stringify([...processedOrderIds])); }catch(e){}
     }
     async function checkNewOrdersForDeduct(){
+      // FIX V12: never deduct / PUT while user is editing or just saved - it was overwriting manual stock edits (5 -&gt; 1)
+      if(window.__ayka_dirty) return;
+      if(window.__ayka_blockPollUntil &amp;&amp; Date.now() &lt; window.__ayka_blockPollUntil) return;
       try{
         let orr = await fetch(FB2 + '/orders.json?ts=' + Date.now());
         let ordersObj = await orr.json();
