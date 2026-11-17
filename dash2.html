@@ -86,7 +86,7 @@ function shipDefault(g){ if(DEF_SHIP[g]) return DEF_SHIP[g]; return 90; }
 function doLogin(){ if(document.getElementById('pw').value===PASS){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.remove('hidden'); init(); } else document.getElementById('loginErr').textContent='باسورد غلط'; }
 function showTab(t){ ['products','inventory','orders','shipping','categories','settings'].forEach(function(x){ document.getElementById('tab-'+x).classList.toggle('hidden', x!==t); }); document.querySelectorAll('.menu button').forEach(function(b){ b.classList.toggle('active', b.dataset.t===t); }); }
 function markDirty(){ dirty=true; var s=document.getElementById('saveStatus'); s.textContent='● فيه تغييرات مش محفوظة - دوس حفظ التغييرات'; s.style.color='#facc15'; }
-function syncShippingToStorage(){ try{ localStorage.setItem('ayka_v2_shipping', JSON.stringify(shipping)); }catch(e){} }
+function syncShippingToStorage(){ try{ var a=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; }); localStorage.setItem('ayka_v2_shipping', JSON.stringify(a)); }catch(e){} }
 async function init(){
   // 1) اقرا deductedIds من Firebase الاول - ده اللي بيمنع الخصم مرتين حتى في تاب خفي
   try{ var rd=await fetch(FB+'/deductedIds.json?ts='+Date.now()); var dd=await rd.json(); if(Array.isArray(dd)) deductedIds=dd; else if(dd) deductedIds=Object.values(dd); }catch(e){}
@@ -98,7 +98,7 @@ async function init(){
 async function loadAll(){
   var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]);
   var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var _sh2=null; try{ var _r2b=await fetch(FB+'/settings/shipping.json?ts='+Date.now()); _sh2=await _r2b.json(); }catch(e){}
-  var sh=await r2.json(); if(sh) shipping=sh; else shipping={}; if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
+  var sh=await r2.json(); if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={}; if(Array.isArray(_sh2)){ _sh2.forEach(function(x){ if(x && x.governorate && shipping[x.governorate]==null) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
   syncShippingToStorage();
   var r3=await fetch(FB+'/orders.json?ts='+Date.now()); orders=await r3.json(); if(!Array.isArray(orders)) orders=Object.values(orders||[]);
   var r4=await fetch(FB+'/settings.json?ts='+Date.now()); var st=await r4.json(); if(st) settings=Object.assign(settings, st);
@@ -304,8 +304,7 @@ async function saveAll(){
   var merged=fresh.map(function(fp){ var lp=products.find(function(x){return String(x.id)===String(fp.id)||x.name===fp.name;}); if(!lp) return fp; var o=Object.assign({},fp); o.name=lp.name; o.price=lp.price; o.discountPrice=lp.discountPrice; o.description=lp.description; o.category=lp.category; o.images=lp.images; o.image=lp.image||lp.img||(lp.images&&lp.images[0]); o.img=o.image; o.gallery=lp.gallery||lp.images; o.variants=lp.variants; o.colors=lp.colors; o.sizes=lp.sizes; o.stock=lp.stock; return o; });
   products.forEach(function(lp){ if(!merged.find(function(x){return String(x.id)===String(lp.id)||x.name===lp.name;})) merged.push(lp); });
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
-  var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipping)});
-  try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipping)}); await fetch(FB+'/shippingRates.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipping)}); }catch(e){}
+  var shipArr=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; });   var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)});   try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); await fetch(FB+'/shippingRates.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); }catch(e){}
   try{ await fetch(FB+'/settings.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)}); }catch(e){}
   dirty=false; document.getElementById('saveStatus').textContent='✅ اتحفظ - منتجات '+res1.status+' - شحن '+res2.status; document.getElementById('saveStatus').style.color='#22c55e'; btn.textContent='✅ حفظ التغييرات';
   syncShippingToStorage();
