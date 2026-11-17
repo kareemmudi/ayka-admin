@@ -79,7 +79,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 var FB='https://ayka-store-9a2d5-default-rtdb.firebaseio.com';
 var PASS='Ayka@2027Kareem';
 var products=[], orders=[], shipping={}, settings={storeName:'AYKA',email:'Kareemmudii@gmail.com'}, categories=[];
-var dirty=false, deductedIds=[], pollTimer=null;
+var dirty=false, deductedIds=[], pollTimer=null; var deletedIds=[]; try{ deletedIds=JSON.parse(localStorage.getItem('ayka_deleted_ids')||'[]'); }catch(e){ deletedIds=[]; }
 var GOVS=['Cairo','Giza','Alexandria','Dakahlia','Sharqia','Gharbia','Monufia','Qalyubia','Kafr El Sheikh','Damietta','Port Said','Ismailia','Suez','Fayoum','Beni Suef','Minya','Asyut','Sohag','Qena','Luxor','Aswan','Red Sea','Beheira','Matrouh','North Sinai','South Sinai','New Valley'];
 var DEF_SHIP={Cairo:50,Giza:50,Alexandria:70};
 function shipDefault(g){ if(DEF_SHIP[g]) return DEF_SHIP[g]; return 90; }
@@ -96,7 +96,7 @@ async function init(){
   pollTimer=setInterval(pollOrders, 3000);
 }
 async function loadAll(){
-  var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]);
+  var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
   var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var _sh2=null; try{ var _r2b=await fetch(FB+'/settings/shipping.json?ts='+Date.now()); _sh2=await _r2b.json(); }catch(e){}
   var sh=await r2.json(); if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={}; if(Array.isArray(_sh2)){ _sh2.forEach(function(x){ if(x && x.governorate && shipping[x.governorate]==null) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
   syncShippingToStorage();
@@ -121,7 +121,7 @@ async function tryDeduct(order){
   if(deductedIds.indexOf(String(order.id))!==-1) return; // متخصمش مرتين - متسجل في Firebase
   var items=order.items||order.products||order.cart||[]; if(!items.length && order.order && order.order.items) items=order.order.items; if(!items.length) { await markDeducted(order.id); return; }
   // GET جديد قبل الخصم - عشان متخصمش من قديم
-  var r=await fetch(FB+'/products.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]);
+  var r=await fetch(FB+'/products.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]); fresh=fresh.filter(function(fp){ var k1=String(fp.id||'')+'|'+String(fp.name||''); var k2=String(fp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
   var changed=false;
   items.forEach(function(item){
     var pid=item.productId||item.id||item.product_id; var qty=Number(item.qty||item.quantity||1); var size=item.size||item.variantSize||''; var color=item.color||item.variantColor||'';
@@ -184,7 +184,8 @@ function syncEditToProduct(pi){
 }
 function saveEdit(pi){ syncEditToProduct(pi); markDirty(); saveAll(); }
 function addProduct(){ products.push({id:Date.now(),name:'منتج جديد',price:0,discountPrice:'',description:'',category:categories[0]||'',stock:0,images:[],variants:[{size:'S',color:'Black',stock:0},{size:'M',color:'Black',stock:0},{size:'L',color:'Black',stock:0}]}); markDirty(); renderAll(); showTab('products'); }
-function delProduct(pi){ if(!confirm('تحذف المنتج ده؟')) return; products.splice(pi,1); markDirty(); renderAll(); }
+function delProduct(pi){ if(!confirm('تحذف المنتج ده؟')) return; var p=products[pi]; if(p){ var key=String(p.id||'')+'|'+String(p.name||''); if(deletedIds.indexOf(key)===-1) deletedIds.push(key); if(deletedIds.indexOf(String(p.id||''))===-1) deletedIds.push(String(p.id||'')); try{ localStorage.setItem('ayka_deleted_ids', JSON.stringify(deletedIds)); }catch(e){} } products.splice(pi,1); markDirty(); renderAll(); document.getElementById('saveStatus').textContent='⏳ بيمسح من Firebase...'; document.getElementById('saveStatus').style.color='#facc15'; saveDeletedNow(); }
+async function saveDeletedNow(){ try{ var clean=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); var res=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)}); dirty=false; document.getElementById('saveStatus').textContent=res.ok?'✅ اتمسح من Firebase نهائي':'⚠️ المسح فشل، دوس حفظ'; document.getElementById('saveStatus').style.color=res.ok?'#22c55e':'#ef4444'; }catch(e){ document.getElementById('saveStatus').textContent='⚠️ المسح فشل، دوس حفظ التغييرات'; document.getElementById('saveStatus').style.color='#ef4444'; } }
 function onInvInput(pi,vi,val){ var p=products[pi]; if(!p||!p.variants||!p.variants[vi]) return; p.variants[vi].stock=Number(val)||0; var tot=0; p.variants.forEach(function(v){ tot+=Number(v.stock)||0; }); p.stock=tot; markDirty(); }
 function renderInventory(){
   var h='<h3>Inventory - المخزون لكل Variant</h3><p class="small">غير مخزون Black / S من 1 لـ 5 مثلا، والاجمالي = مجموع الـ Variants</p>';
@@ -297,7 +298,7 @@ async function saveAll(){
   var btn=document.querySelector('.savebar .btn'); btn.textContent='⏳ بحفظ...';
   await new Promise(function(res){ setTimeout(res, 400); });
   try{
-  var r=await fetch(FB+'/products.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]);
+  var r=await fetch(FB+'/products.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]); fresh=fresh.filter(function(fp){ var k1=String(fp.id||'')+'|'+String(fp.name||''); var k2=String(fp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
   var merged=fresh.map(function(fp){ var lp=products.find(function(x){return String(x.id)===String(fp.id)||x.name===fp.name;}); if(!lp) return fp; var o=Object.assign({},fp); o.name=lp.name; o.price=lp.price; o.discountPrice=lp.discountPrice; o.description=lp.description; o.category=lp.category; o.images=lp.images; o.image=lp.image||lp.img||(lp.images&&lp.images[0]); o.img=o.image; o.gallery=lp.gallery||lp.images; o.mainImage=lp.mainImage||o.image; o.variants=lp.variants; o.colors=lp.colors; o.sizes=lp.sizes; o.stock=lp.stock; return o; });
   products.forEach(function(lp){ if(!merged.find(function(x){return String(x.id)===String(lp.id)||x.name===lp.name;})) merged.push(lp); });
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
