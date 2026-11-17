@@ -332,7 +332,8 @@ async function saveAll(){
         try{ await fetch(FB+'/files/'+encodeURIComponent(_hash)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_d)}); }catch(e){}
         _refs.push('file:'+_hash);
       }
-      if(_refs.length){ _mp2.mainImage=_refs[0]; _mp2.image=_refs[0]; _mp2.img=_refs[0]; _mp2.images=_refs.slice(); _mp2.gallery=_refs.slice(1); }
+      // V18-FILES v2: MAIN stays REAL image (grid shows instantly), GALLERY only = files (saves space)
+      if(_refs.length){ _mp2.mainImage=_all[0]; _mp2.image=_all[0]; _mp2.img=_all[0]; _mp2.images=[_all[0]].concat(_refs.slice(1)); _mp2.gallery=_refs.slice(1); }
     }
   }catch(e){}
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
