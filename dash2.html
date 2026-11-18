@@ -53,7 +53,7 @@ label{font-size:11px;color:#888;letter-spacing:1px;display:block;margin-bottom:4
 .prod{display:flex;gap:12px}.prod img{width:90px;height:90px;object-fit:cover;border-radius:12px;background:#000;border:1px solid #222}
 table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #222;text-align:right;font-size:13px}
 
-/* CLEAR ORDER CARD */
+/* CLEAR ORDER CARD - orders only */
 .order-card{background:#111113;border:1px solid #2a2a2e;border-radius:18px;padding:16px;margin:14px 0}
 .order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .order-id{font-size:15px;font-weight:900;word-break:break-all;line-height:1.4}
@@ -75,7 +75,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 .btn-delete{background:#ef4444;color:#fff}
 @media(max-width:480px){.order-btns{grid-template-columns:1fr}.order-btns button{padding:14px}}
 </style></head><body>
-<div id="login" class="login"><div class="logo glitch">AYKA<span class="dot">.</span></div><p class="small">لوحة تحكم المتجر - منفصلة تماما عن المتجر</p><div style="display:flex;gap:8px;justify-content:center"><input id="pw" type="password" placeholder="الباسورد" autocomplete="current-password" style="flex:1"><button class="btn" type="button" onclick="togglePw()" style="padding:10px 14px">👁</button></div><br><button class="btn" onclick="doLogin()">فتح</button><p class="small" id="loginErr"></p><p class="small" style="color:#666">لو الآيفون حط مسافة بعد الباسورد، الداشبورد هيشيلها لوحده</p></div>
+<div id="login" class="login"><div class="logo glitch">AYKA<span class="dot">.</span></div><p class="small">لوحة تحكم المتجر - منفصلة تماما عن المتجر</p><input id="pw" type="password" placeholder="الباسورد"><br><br><button class="btn" onclick="doLogin()">فتح</button><p class="small" id="loginErr"></p></div>
 <div id="app" class="hidden">
 <div class="top"><div><span class="logo glitch">AYKA<span class="dot">.</span></span> <span style="font-size:11px;color:#888">DASHBOARD • Firebase فقط</span></div><div><span id="conn" style="font-size:12px;color:#22c55e">● متصل</span> <button class="btnG" onclick="location.reload()">ريفريش</button></div></div>
 <div class="menu">
@@ -105,10 +105,7 @@ var dirty=false, deductedIds=[], pollTimer=null; var deletedIds=[]; try{ deleted
 var GOVS=['Cairo','Giza','Alexandria','Dakahlia','Sharqia','Gharbia','Monufia','Qalyubia','Kafr El Sheikh','Damietta','Port Said','Ismailia','Suez','Fayoum','Beni Suef','Minya','Asyut','Sohag','Qena','Luxor','Aswan','Red Sea','Beheira','Matrouh','North Sinai','South Sinai','New Valley'];
 var DEF_SHIP={Cairo:50,Giza:50,Alexandria:70};
 function shipDefault(g){ if(DEF_SHIP[g]) return DEF_SHIP[g]; return 90; }
-function cleanPw(v){ return String(v||'').replace(/[\u200B-\u200D\uFEFF\s]/g,'').trim(); }
-function togglePw(){ var el=document.getElementById('pw'); el.type=(el.type==='password'?'text':'password'); }
-function doLogin(){ var v=cleanPw(document.getElementById('pw').value); if(v===cleanPw(PASS)){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.remove('hidden'); init(); } else { document.getElementById('loginErr').textContent='باسورد غلط - اتأكد إن مفيش مسافة زيادة، ودوس 👁 عشان تشوف اللي كتبته'; document.getElementById('pw').focus(); } }
-document.addEventListener('DOMContentLoaded', function(){ var pw=document.getElementById('pw'); if(pw){ pw.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); doLogin(); } }); pw.addEventListener('input', function(){ document.getElementById('loginErr').textContent=''; }); } });
+function doLogin(){ if(document.getElementById('pw').value===PASS){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.remove('hidden'); init(); } else document.getElementById('loginErr').textContent='باسورد غلط'; }
 function showTab(t){ ['products','inventory','orders','shipping','categories','settings'].forEach(function(x){ document.getElementById('tab-'+x).classList.toggle('hidden', x!==t); }); document.querySelectorAll('.menu button').forEach(function(b){ b.classList.toggle('active', b.dataset.t===t); }); }
 function markDirty(){ dirty=true; var s=document.getElementById('saveStatus'); s.textContent='● فيه تغييرات مش محفوظة - دوس حفظ التغييرات'; s.style.color='#facc15'; }
 function syncShippingToStorage(){ try{ var a=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; }); localStorage.setItem('ayka_v2_shipping', JSON.stringify(a)); }catch(e){} }
@@ -293,7 +290,7 @@ function waConfirm(orderId){
     window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank');
   }catch(e){ console.warn(e); }
 }
-function injectWaButtons(){ return; /* buttons are now in renderOrders */ if(false){ try{ document.querySelectorAll('#tab-orders .card').forEach(function(card,idx){ if(card.querySelector('.wa-btn')) return; var o=orders[idx]; if(!o) return; var btn=document.createElement('button'); btn.className='btnG wa-btn'; btn.style.cssText='background:#22c55e;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:bold;cursor:pointer;margin:4px'; btn.textContent='📱 تأكيد واتساب'; btn.onclick=(function(id){ return function(){ waConfirm(id); }; })(o.id); card.appendChild(btn); }); }catch(e){} }
+function injectWaButtons(){ return; if(false){ try{ document.querySelectorAll('#tab-orders .card').forEach(function(card,idx){ if(card.querySelector('.wa-btn')) return; var o=orders[idx]; if(!o) return; var btn=document.createElement('button'); btn.className='btnG wa-btn'; btn.style.cssText='background:#22c55e;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:bold;cursor:pointer;margin:4px'; btn.textContent='📱 تأكيد واتساب'; btn.onclick=(function(id){ return function(){ waConfirm(id); }; })(o.id); card.appendChild(btn); }); }catch(e){} }
 
 function compressImage(dataUrl, cb){
   try{
