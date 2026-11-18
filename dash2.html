@@ -97,22 +97,6 @@ async function init(){
 }
 async function loadAll(){
   var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
-  // V18-FILES: حل file: refs في الخلفية، بالتوازي، مش بيوقف الداش بورد
-  try{
-    products.forEach(function(_pp){
-      var _need=[]; [_pp.mainImage].concat(_pp.gallery||[]).concat(_pp.images||[]).forEach(function(v){ if(typeof v==='string' && v.startsWith('file:') && _need.indexOf(v)===-1) _need.push(v); });
-      _need.forEach(function(_ref){
-        var _hash=_ref.slice(5);
-        fetch(FB+'/files/'+encodeURIComponent(_hash)+'.json').then(function(r){return r.json();}).then(function(_data){
-          if(typeof _data==='string' && _data.startsWith('data:')){
-            if(_pp.mainImage===_ref) _pp.mainImage=_data; if(_pp.image===_ref) _pp.image=_data; if(_pp.img===_ref) _pp.img=_data;
-            _pp.gallery=(_pp.gallery||[]).map(function(x){ return x===_ref?_data:x; }); _pp.images=(_pp.images||[]).map(function(x){ return x===_ref?_data:x; });
-            try{ renderAll(); }catch(e){}
-          }
-        }).catch(function(){});
-      });
-    });
-  }catch(e){}
   var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var _sh2=null; try{ var _r2b=await fetch(FB+'/settings/shipping.json?ts='+Date.now()); _sh2=await _r2b.json(); }catch(e){}
   var sh=await r2.json(); if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={}; if(Array.isArray(_sh2)){ _sh2.forEach(function(x){ if(x && x.governorate && shipping[x.governorate]==null) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
   syncShippingToStorage();
@@ -317,25 +301,6 @@ async function saveAll(){
   var r=await fetch(FB+'/products.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]); fresh=fresh.filter(function(fp){ var k1=String(fp.id||'')+'|'+String(fp.name||''); var k2=String(fp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
   var merged=fresh.map(function(fp){ var lp=products.find(function(x){return String(x.id)===String(fp.id)||x.name===fp.name;}); if(!lp) return fp; var o=Object.assign({},fp); o.name=lp.name; o.price=lp.price; o.discountPrice=lp.discountPrice; o.description=lp.description; o.category=lp.category; o.images=lp.images; o.image=lp.image||lp.img||(lp.images&&lp.images[0]); o.img=o.image; o.gallery=lp.gallery||lp.images; o.mainImage=lp.mainImage||o.image; o.variants=lp.variants; o.colors=lp.colors; o.sizes=lp.sizes; o.stock=lp.stock; return o; });
   products.forEach(function(lp){ if(!merged.find(function(x){return String(x.id)===String(lp.id)||x.name===lp.name;})) merged.push(lp); });
-  // V18-FILES: كل صورة = ملف لوحده في /files/، و products.json فيه بس file: refs - عشان المساحة والجاليري
-  try{
-    for(var _fi=0; _fi<merged.length; _fi++){
-      var _mp2=merged[_fi];
-      var _all=[]; if(_mp2.mainImage) _all.push(_mp2.mainImage); (_mp2.gallery||[]).forEach(function(u){ if(u && u!==_mp2.mainImage) _all.push(u); });
-      if(_mp2.images) _mp2.images.forEach(function(u){ if(u && _all.indexOf(u)===-1) _all.push(u); });
-      var _refs=[];
-      for(var _ii=0; _ii<_all.length; _ii++){
-        var _d=_all[_ii];
-        if(typeof _d==='string' && _d.startsWith('file:')){ _refs.push(_d); continue; }
-        if(typeof _d!=='string' || !_d.startsWith('data:')){ _refs.push(_d); continue; }
-        var _hash='img_'+String(_mp2.id)+'_'+_ii+'_'+(_d.length%100000);
-        try{ await fetch(FB+'/files/'+encodeURIComponent(_hash)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_d)}); }catch(e){}
-        _refs.push('file:'+_hash);
-      }
-      // V18-FILES v2: MAIN stays REAL image (grid shows instantly), GALLERY only = files (saves space)
-      if(_refs.length){ _mp2.mainImage=_all[0]; _mp2.image=_all[0]; _mp2.img=_all[0]; _mp2.images=[_all[0]].concat(_refs.slice(1)); _mp2.gallery=_refs.slice(1); }
-    }
-  }catch(e){}
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
   var shipArr=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; });   var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)});   try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); await fetch(FB+'/shippingRates.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); }catch(e){}
   try{ await fetch(FB+'/settings.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)}); }catch(e){}
