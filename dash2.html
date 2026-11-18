@@ -290,7 +290,7 @@ function waConfirm(orderId){
     window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank');
   }catch(e){ console.warn(e); }
 }
-function injectWaButtons(){ return; if(false){ try{ document.querySelectorAll('#tab-orders .card').forEach(function(card,idx){ if(card.querySelector('.wa-btn')) return; var o=orders[idx]; if(!o) return; var btn=document.createElement('button'); btn.className='btnG wa-btn'; btn.style.cssText='background:#22c55e;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:bold;cursor:pointer;margin:4px'; btn.textContent='📱 تأكيد واتساب'; btn.onclick=(function(id){ return function(){ waConfirm(id); }; })(o.id); card.appendChild(btn); }); }catch(e){} }
+function injectWaButtons(){ try{ document.querySelectorAll('#tab-orders .card').forEach(function(card,idx){ if(card.querySelector('.wa-btn')) return; var o=orders[idx]; if(!o) return; var btn=document.createElement('button'); btn.className='btnG wa-btn'; btn.style.cssText='background:#22c55e;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:bold;cursor:pointer;margin:4px'; btn.textContent='📱 تأكيد واتساب'; btn.onclick=(function(id){ return function(){ waConfirm(id); }; })(o.id); card.appendChild(btn); }); }catch(e){} }
 
 function compressImage(dataUrl, cb){
   try{
