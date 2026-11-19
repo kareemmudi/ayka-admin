@@ -118,15 +118,30 @@ async function init(){
   pollTimer=setInterval(pollOrders, 3000);
 }
 async function loadAll(){
-  var r=await fetch(FB+'/products.json?ts='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=Object.values(products||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; });
-  var r2=await fetch(FB+'/shipping.json?ts='+Date.now()); var _sh2=null; try{ var _r2b=await fetch(FB+'/settings/shipping.json?ts='+Date.now()); _sh2=await _r2b.json(); }catch(e){}
-  var sh=await r2.json(); if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={}; if(Array.isArray(_sh2)){ _sh2.forEach(function(x){ if(x && x.governorate && shipping[x.governorate]==null) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(_sh2 && typeof _sh2==='object'){ Object.keys(_sh2).forEach(function(k){ if(shipping[k]==null) shipping[k]=_sh2[k]; }); } GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
-  syncShippingToStorage();
-  var r3=await fetch(FB+'/orders.json?ts='+Date.now()); orders=await r3.json(); if(!Array.isArray(orders)) orders=Object.values(orders||[]);
-  var r4=await fetch(FB+'/settings.json?ts='+Date.now()); var st=await r4.json(); if(st) settings=Object.assign(settings, st);
-  categories=[]; products.forEach(function(p){ if(p.category && categories.indexOf(p.category)===-1) categories.push(p.category); });
-  renderAll();
-  setTimeout(function(){ products.forEach(function(_,pi){ try{renderChips(pi);}catch(e){} }); },300);
+  try{
+    var results=await Promise.all([
+      fetch(FB+'/products_lite.json').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(FB+'/products.json').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(FB+'/shipping.json').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(FB+'/orders.json').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(FB+'/settings.json').then(function(r){return r.json();}).catch(function(){return null;})
+    ]);
+    var lite=results[0], full=results[1];
+    var useLite=null;
+    if(lite){ useLite=Array.isArray(lite)?lite:Object.values(lite||[]); }
+    if(useLite && useLite.length){ products=useLite.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); }
+    else if(full){ products=Array.isArray(full)?full:Object.values(full||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); }
+    else products=[];
+    var sh=results[2]; if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={};
+    GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
+    syncShippingToStorage();
+    var ord=results[3]; orders=Array.isArray(ord)?ord:Object.values(ord||[]);
+    var st=results[4]; if(st) settings=Object.assign(settings, st);
+    categories=[]; products.forEach(function(p){ if(p.category && categories.indexOf(p.category)===-1) categories.push(p.category); });
+    renderAll();
+    setTimeout(function(){ products.forEach(function(_,pi){ try{renderChips(pi);}catch(e){} }); },300);
+    if(useLite && useLite.length && full){ var fullList=Array.isArray(full)?full:Object.values(full||[]); window._fullProducts=fullList; }
+  }catch(e){ console.warn('loadAll fast failed', e); }
 }
 async function pollOrders(){
   if(dirty) return; // حماية: لو بتعدل، ميكتبش فوق تعديلك قبل ما تدوس حفظ
@@ -337,6 +352,8 @@ async function saveAll(){
   var merged=fresh.map(function(fp){ var lp=products.find(function(x){return String(x.id)===String(fp.id)||x.name===fp.name;}); if(!lp) return fp; var o=Object.assign({},fp); o.name=lp.name; o.price=lp.price; o.discountPrice=lp.discountPrice; o.description=lp.description; o.category=lp.category; o.images=lp.images; o.image=lp.image||lp.img||(lp.images&&lp.images[0]); o.img=o.image; o.gallery=lp.gallery||lp.images; o.mainImage=lp.mainImage||o.image; o.variants=lp.variants; o.colors=lp.colors; o.sizes=lp.sizes; o.stock=lp.stock; return o; });
   products.forEach(function(lp){ if(!merged.find(function(x){return String(x.id)===String(lp.id)||x.name===lp.name;})) merged.push(lp); });
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
+  // FAST: also save lite (no images) so next open is <1s, not 15s
+  try{ var lite=merged.map(function(pp){ return {id:pp.id,name:pp.name,price:pp.price,discountPrice:pp.discountPrice,description:pp.description,category:pp.category,stock:pp.stock,variants:pp.variants,sizes:pp.sizes,colors:pp.colors}; }); await fetch(FB+'/products_lite.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lite)}); }catch(e){}
   var shipArr=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; });   var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)});   try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); await fetch(FB+'/shippingRates.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); }catch(e){}
   try{ await fetch(FB+'/settings.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)}); }catch(e){}
   dirty=false; document.getElementById('saveStatus').textContent='✅ اتحفظ - منتجات '+res1.status+' - شحن '+res2.status; document.getElementById('saveStatus').style.color='#22c55e';
