@@ -118,25 +118,30 @@ async function init(){
   pollTimer=setInterval(pollOrders, 3000);
 }
 async function loadAll(){
-  // SAFE V20: NO lite - load FULL products with images, in parallel (fast but safe, never overwrites images with lite)
   try{
     var results=await Promise.all([
+      fetch(FB+'/products_lite.json').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(FB+'/products.json').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(FB+'/shipping.json').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(FB+'/orders.json').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(FB+'/settings.json').then(function(r){return r.json();}).catch(function(){return null;})
     ]);
-    var full=results[0];
-    if(full){ products=Array.isArray(full)?full:Object.values(full||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); } else products=[];
-    var sh=results[1]; if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={};
+    var lite=results[0], full=results[1];
+    var useLite=null;
+    if(lite){ useLite=Array.isArray(lite)?lite:Object.values(lite||[]); }
+    if(useLite && useLite.length){ products=useLite.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); }
+    else if(full){ products=Array.isArray(full)?full:Object.values(full||[]); products=products.filter(function(pp){ var k1=String(pp.id||'')+'|'+String(pp.name||''); var k2=String(pp.id||''); if(deletedIds.indexOf(k1)!==-1 || deletedIds.indexOf(k2)!==-1) return false; return true; }); }
+    else products=[];
+    var sh=results[2]; if(Array.isArray(sh)){ shipping={}; sh.forEach(function(x){ if(x && x.governorate) shipping[x.governorate]=Number(x.cost ?? x.price ?? 0); }); } else if(sh) shipping=sh; else shipping={};
     GOVS.forEach(function(g){ if(shipping[g]==null) shipping[g]=shipDefault(g); });
     syncShippingToStorage();
-    var ord=results[2]; orders=Array.isArray(ord)?ord:Object.values(ord||[]);
-    var st=results[3]; if(st) settings=Object.assign(settings, st);
+    var ord=results[3]; orders=Array.isArray(ord)?ord:Object.values(ord||[]);
+    var st=results[4]; if(st) settings=Object.assign(settings, st);
     categories=[]; products.forEach(function(p){ if(p.category && categories.indexOf(p.category)===-1) categories.push(p.category); });
     renderAll();
     setTimeout(function(){ products.forEach(function(_,pi){ try{renderChips(pi);}catch(e){} }); },300);
-  }catch(e){ console.warn('loadAll V20 failed', e); }
+    if(useLite && useLite.length && full){ var fullList=Array.isArray(full)?full:Object.values(full||[]); window._fullProducts=fullList; }
+  }catch(e){ console.warn('loadAll fast failed', e); }
 }
 async function pollOrders(){
   if(dirty) return; // حماية: لو بتعدل، ميكتبش فوق تعديلك قبل ما تدوس حفظ
@@ -174,7 +179,7 @@ async function markDeducted(id){
   try{ await fetch(FB+'/deductedIds.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(deductedIds)}); }catch(e){}
 }
 function renderAll(){ renderProducts(); renderInventory(); renderOrders(); setTimeout(injectWaButtons,200); renderShipping(); renderCategories(); renderSettings(); }
-function imgOf(p){ return (p.mainImage||p.image||p.img||(p.images&&p.images[0])||(p.gallery&&p.gallery[0])||''); }
+function imgOf(p){ return (p.images&&p.images[0])||p.image||'https://via.placeholder.com/90'; }
 function renderProducts(){
   var h='<h3>Products</h3><button class="btnB" onclick="addProduct()">+ اضافة منتج</button>';
   products.forEach(function(p,pi){
@@ -188,7 +193,25 @@ function editProduct(pi){
   el.innerHTML='<div class="grid2"><div><label>الاسم</label><input id="e-name-'+pi+'" value="'+(p.name||'')+'"></div><div><label>السعر</label><input id="e-price-'+pi+'" type="number" value="'+(p.price||0)+'"></div><div><label>سعر الخصم Discount Price</label><input id="e-disc-'+pi+'" type="number" value="'+(p.discountPrice||'')+'"></div><div><label>القسم - اختار من القايمة</label><select id="e-cat-'+pi+'" onchange="catChanged('+pi+',this.value)"><option value="CLOTHING">CLOTHING - ملابس</option><option value="SHOES">SHOES - شوزات</option><option value="BAGS">BAGS - شنط</option><option value="ACCESSORIES">ACCESSORIES - اكسسوارات</option><option value="ENTERTAINMENT">ENTERTAINMENT - ترفيه</option><option value="__custom">+ قسم جديد...</option></select><input id="e-cat-custom-'+pi+'" placeholder="اكتب قسم جديد" style="display:none;margin-top:6px"><div class="small">القسم الحالي: '+(p.category||'')+' - لو اخترت قسم من القايمة هيتطبق، لو كتبت قسم جديد هيتضاف</div></div></div><label>الوصف</label><textarea id="e-desc-'+pi+'" rows="3">'+(p.description||'')+'</textarea><label>المقاسات - دوس عشان تختار</label><div class="chipBox" id="sizes-box-'+pi+'"></div><button type="button" class="btnG" onclick="addSizePrompt('+pi+')">+ مقاس جديد</button><label style="margin-top:8px">المقاسات (بفاصلة)</label><input id="e-sizes-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.size;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الالوان - دوس عشان تختار، مش لازم تكتب</label><div class="chipBox" id="colors-box-'+pi+'"></div><button type="button" class="btnG" onclick="addColorPrompt('+pi+')">+ لون جديد</button><label style="margin-top:8px">الالوان (بفاصلة) - بتتملي لوحدها من الاختيارات</label><input id="e-colors-'+pi+'" value="'+((p.variants||[]).map(function(v){return v.color;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))+'"><label>الصورة الرئيسية - اللي هتظهر في واجهة المتجر</label><div style="border:2px dashed #22c55e;border-radius:12px;padding:14px;text-align:center;margin:6px 0"><div style="font-size:24px">🖼️</div><div style="font-weight:bold">ارفع الصورة الرئيسية من معرض الجهاز</div><input type="file" accept="image/*" onchange="uploadImg(event,'+pi+')" style="border:none;margin-top:6px"></div><input id="e-img-'+pi+'" placeholder="لو عندك لينك صورة حطه هنا (اختياري)" value="'+(p.image||p.img||'')+'" style="display:none"><div class="small">ارفع من معرض جهازك، الصورة هتتحط كصورة رئيسية على طول</div><label style="margin-top:10px">باقي الصور - الجاليري (ممكن اكتر من 10 صور)</label><div style="border:2px dashed #3B82F6;border-radius:12px;padding:16px;text-align:center;margin:6px 0"><div style="font-size:28px">📸</div><div style="font-weight:bold;margin:6px 0">ارفع من معرض الجهاز</div><input type="file" accept="image/*" multiple onchange="uploadGallery(event,'+pi+')" style="border:none"><div class="small">دوس واختار اكتر من صورة من معرض جهازك في نفس الوقت - مش لازم لينك</div></div><div id="gallery-preview-'+pi+'" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div><textarea id="e-gallery-'+pi+'" rows="2" style="display:none"> '+((p.gallery||p.images||[]).join('\n'))+'</textarea><div class="small">الصور اللي هترفعها هتظهر هنا، وهي اللي هتظهر جوه صفحة المنتج في المتجر</div><label style="margin-top:10px">المخزون لكل لون + مقاس - ده اللي بيخلي المتجر يخليك تختار اللون والمقاس</label><div id="variants-box-'+pi+'"></div><button type="button" class="btnG" onclick="buildVariants('+pi+')">🔄 حدّث جدول المقاسات / الألوان</button><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="saveEdit('+pi+')">حفظ المنتج ده</button><button class="btnG" onclick="document.getElementById(\'edit-'+pi+'\').classList.add(\'hidden\')">الغاء</button></div>';
   setTimeout(function(){ try{ renderGalleryPreview(pi); }catch(e){} try{ renderChips(pi); }catch(e){} try{ buildVariants(pi); }catch(e){} }, 80);
 }
-function uploadImg(e,pi){ var f=e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ compressImage(r.result, function(comp){ var p=products[pi]; p.mainImage=comp; p.image=comp; p.img=comp; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; var combined=[comp]; p.gallery.forEach(function(u){ if(u!==r.result) combined.push(u); }); p.images=combined; markDirty(); var card=document.querySelectorAll('#tab-products .prod img')[pi]; if(card) card.src=r.result; var prev=document.getElementById('gallery-preview-'+pi); renderGalleryPreview(pi); }); }; r.readAsDataURL(f); }
+
+async function uploadToGitHub(file){
+  var token=(settings.githubToken||'').trim();
+  if(!token) return null;
+  var buf=await file.arrayBuffer(); var bytes=new Uint8Array(buf); var bin=''; for(var i=0;i<bytes.length;i++){ bin+=String.fromCharCode(bytes[i]); }
+  var b64=btoa(bin);
+  var ext=file.name.split('.').pop().toLowerCase(); if(['jpg','jpeg','png','webp','gif'].indexOf(ext)===-1) ext='jpg';
+  var fname='img-'+Date.now()+'-'+Math.floor(Math.random()*100000)+'.'+ext;
+  var path='images/'+fname;
+  var r=await fetch('https://api.github.com/repos/kareemmudi/ayka/contents/'+path,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'upload '+fname, content:b64, branch:'main'})});
+  var j=await r.json(); if(j && j.content && j.content.download_url) return j.content.download_url; if(j && j.message) throw new Error(j.message); throw new Error('GitHub upload failed');
+}
+async function uploadFileSmart(file){
+  try{ var url=await uploadToGitHub(file); if(url) return url; }catch(e){ alert('GitHub رفع فشل، هحفظ بالقديم: '+(e.message||e)); }
+  return await new Promise(function(res){ var r=new FileReader(); r.onload=function(){ compressImage(r.result, function(comp){ res(comp); }); }; r.readAsDataURL(file); });
+}
+function uploadImg(e,pi){ var f=e.target.files[0]; if(!f) return; var btn=e.target; btn.disabled=true;
+  uploadFileSmart(f).then(function(comp){ var p=products[pi]; p.mainImage=comp; p.image=comp; p.img=comp; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; var combined=[comp]; p.gallery.forEach(function(u){ if(u!==comp) combined.push(u); }); p.images=combined; markDirty(); var card=document.querySelectorAll('#tab-products .prod img')[pi]; if(card) card.src=comp; renderGalleryPreview(pi); }).finally(function(){ btn.disabled=false; });
+}
 function syncEditToProduct(pi){
   var p=products[pi]; if(!p) return p;
   var el=function(id){ return document.getElementById(id); };
@@ -278,8 +301,11 @@ function renderCategories(){
 }
 function addCat(){ var v=document.getElementById('newCat').value.trim(); if(!v) return; if(categories.indexOf(v)===-1) categories.push(v); renderCategories(); }
 function renderSettings(){
-  document.getElementById('tab-settings').innerHTML='<h3>Settings</h3><div class="card"><label>اسم المتجر</label><input id="set-name" value="'+(settings.storeName||'AYKA')+'"><br><br><label>ايميل المالك</label><input id="set-email" value="'+(settings.email||'')+'"></div>';
+  document.getElementById('tab-settings').innerHTML='<h3>Settings</h3><div class="card"><label>اسم المتجر</label><input id="set-name" value="'+(settings.storeName||'AYKA')+'"><br><br><label>ايميل المالك</label><input id="set-email" value="'+(settings.email||'')+'"></div><div class="card" style="border:2px solid #3B82F6"><h4>📁 GitHub - الصور كملفات (مرة واحدة بس)</h4><p class="small">من غيرها الصور هتفضل بالطريقة القديمة البطيئة. لو كتبتهم هنا، أي منتج جديد هتضيفه هيترفع أوتوماتيك، والمتجر هيفتح في ثانية.</p><label>GitHub Token (ghp_...)</label><input id="set-token" placeholder="الصقه هنا، بيبدأ بـ ghp_" value="'+(settings.githubToken||'')+'" style="font-size:12px"><br><br><div class="small" id="cloud-status"></div></div>';
   document.getElementById('set-name').onchange=function(){ settings.storeName=this.value; markDirty(); }; document.getElementById('set-email').onchange=function(){ settings.email=this.value; markDirty(); };
+  document.getElementById('set-token').onchange=function(){ settings.githubToken=this.value.trim(); markDirty(); document.getElementById('cloud-status').textContent='اتحفظ، دوس حفظ التغييرات فوق عشان يثبت'; };
+  
+  var st=document.getElementById('cloud-status'); if(st) st.textContent=(settings.githubToken)?'✅ شغال - الصور الجديدة هتترفع أوتوماتيك كملفات':'⚠️ لسه مش مكتوب - الصور هتفضل بالطريقة القديمة لحد ما تكتبه';
 }
 
 var PRESET_COLORS=['Black','White','Blue','Green','Grey','Beige','Brown','Red','Pink','Yellow','Orange','Purple'];
@@ -335,7 +361,7 @@ function buildVariants(pi){
   h+='</table><div class="small">كل لون + مقاس ليه مخزون لوحده، عشان المتجر يخليك تختارهم، ومايقولش Variant not found</div>';
   box.innerHTML=h;
 }
-function uploadGallery(e,pi){ var files=e.target.files; if(!files.length) return; var p=products[pi]; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; if(!p.mainImage && p.image) p.mainImage=p.image; Array.from(files).forEach(function(f){ var r=new FileReader(); r.onload=function(ev){ compressImage(ev.target.result, function(comp){ p.gallery.push(comp); var ta=document.getElementById('e-gallery-'+pi); if(ta) ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+comp; if(p.mainImage){ var combined=[p.mainImage]; p.gallery.forEach(function(u){ if(u!==p.mainImage) combined.push(u); }); p.images=combined; } else { p.images=p.gallery.slice(); } renderGalleryPreview(pi); markDirty(); }); }; r.readAsDataURL(f); }); }
+function uploadGallery(e,pi){ var files=e.target.files; if(!files.length) return; var p=products[pi]; if(!p.gallery) p.gallery=[]; if(!p.images) p.images=[]; if(!p.mainImage && p.image) p.mainImage=p.image; Array.from(files).forEach(function(f){ uploadFileSmart(f).then(function(comp){ p.gallery.push(comp); var ta=document.getElementById('e-gallery-'+pi); if(ta) ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+comp; if(p.mainImage){ var combined=[p.mainImage]; p.gallery.forEach(function(u){ if(u!==p.mainImage) combined.push(u); }); p.images=combined; } else { p.images=p.gallery.slice(); } renderGalleryPreview(pi); markDirty(); }); }); }
 function collectVariants(pi){ var colors=getColors(pi); var sizes=getSizes(pi); if(!colors.length) colors=['Black']; if(!sizes.length) sizes=['One Size']; var p=products[pi]; var oldVars=(p && p.variants)||[]; var out=[]; var seen={}; function key(c,s){ return String(c).trim().toLowerCase()+'|'+String(s).trim().toLowerCase(); } colors.forEach(function(c){ sizes.forEach(function(s){ var kk=key(c,s); if(seen[kk]) return; seen[kk]=1; var el=document.getElementById('var-'+pi+'-'+encodeURIComponent(c)+'-'+encodeURIComponent(s)); var st; if(el){ st=parseInt(el.value||0); if(isNaN(st)) st=0; } else { var found=oldVars.find(function(v){ return key(v.color,v.size)===kk; }); st=found?Number(found.stock)||0:0; } out.push({color:String(c).trim(),size:String(s).trim(),stock:st}); }); }); oldVars.forEach(function(v){ var kk=key(v.color,v.size); if(!seen[kk]){ seen[kk]=1; out.push({color:String(v.color).trim(),size:String(v.size).trim(),stock:Number(v.stock)||0}); } }); return out; }
 
 async function saveAll(){
@@ -347,6 +373,8 @@ async function saveAll(){
   var merged=fresh.map(function(fp){ var lp=products.find(function(x){return String(x.id)===String(fp.id)||x.name===fp.name;}); if(!lp) return fp; var o=Object.assign({},fp); o.name=lp.name; o.price=lp.price; o.discountPrice=lp.discountPrice; o.description=lp.description; o.category=lp.category; o.images=lp.images; o.image=lp.image||lp.img||(lp.images&&lp.images[0]); o.img=o.image; o.gallery=lp.gallery||lp.images; o.mainImage=lp.mainImage||o.image; o.variants=lp.variants; o.colors=lp.colors; o.sizes=lp.sizes; o.stock=lp.stock; return o; });
   products.forEach(function(lp){ if(!merged.find(function(x){return String(x.id)===String(lp.id)||x.name===lp.name;})) merged.push(lp); });
   var res1=await fetch(FB+'/products.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
+  // FAST: also save lite (no images) so next open is <1s, not 15s
+  try{ var lite=merged.map(function(pp){ return {id:pp.id,name:pp.name,price:pp.price,discountPrice:pp.discountPrice,description:pp.description,category:pp.category,stock:pp.stock,variants:pp.variants,sizes:pp.sizes,colors:pp.colors,mainImage:pp.mainImage||pp.image||'',image:pp.image||pp.mainImage||'',gallery:pp.gallery||pp.images||[],images:pp.images||pp.gallery||[]}; }); await fetch(FB+'/products_lite.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lite)}); }catch(e){}
   var shipArr=GOVS.map(function(g){ return {governorate:g, cost:Number(shipping[g])||0}; });   var res2=await fetch(FB+'/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)});   try{ await fetch(FB+'/settings/shipping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); await fetch(FB+'/shippingRates.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(shipArr)}); }catch(e){}
   try{ await fetch(FB+'/settings.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)}); }catch(e){}
   dirty=false; document.getElementById('saveStatus').textContent='✅ اتحفظ - منتجات '+res1.status+' - شحن '+res2.status; document.getElementById('saveStatus').style.color='#22c55e';
