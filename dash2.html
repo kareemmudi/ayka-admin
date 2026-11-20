@@ -202,7 +202,7 @@ async function uploadToGitHub(file){
   var ext=file.name.split('.').pop().toLowerCase(); if(['jpg','jpeg','png','webp','gif'].indexOf(ext)===-1) ext='jpg';
   var fname='img-'+Date.now()+'-'+Math.floor(Math.random()*100000)+'.'+ext;
   var path='images/'+fname;
-  var r=await fetch('https://api.github.com/repos/kareemmudi/ayka/contents/'+path,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'upload '+fname, content:b64, branch:'main'})});
+  var r=await fetch('https://api.github.com/repos/kareemmudi/ayka-images/contents/'+path,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'upload '+fname, content:b64, branch:'main'})});
   var j=await r.json(); if(j && j.content && j.content.download_url) return j.content.download_url; if(j && j.message) throw new Error(j.message); throw new Error('GitHub upload failed');
 }
 async function uploadFileSmart(file){
@@ -229,9 +229,9 @@ function syncEditToProduct(pi){
   // V14 Images: main SEPARATE from gallery - main never overwritten by gallery
   if(p.mainImage) { p.image=p.mainImage; p.img=p.mainImage; }
   else if(p.image) { p.mainImage=p.image; }
-  var gal = (p.gallery||[]).filter(function(u){ return typeof u==='string' && u.startsWith('data:'); }); p.gallery=gal;
+  var gal = (p.gallery||[]).filter(function(u){ return typeof u==='string' && (u.startsWith('data:') || u.startsWith('http') || u.startsWith('https:')); }); p.gallery=gal;
   // images for store = [main, ...gallery] but main stays first
-  var combined=[]; if(p.mainImage && typeof p.mainImage==='string' && p.mainImage.startsWith('data:')) combined.push(p.mainImage); gal.forEach(function(u){ if(u!==p.mainImage) combined.push(u); });
+  var combined=[]; if(p.mainImage && typeof p.mainImage==='string' && (p.mainImage.startsWith('data:') || p.mainImage.startsWith('http'))) combined.push(p.mainImage); gal.forEach(function(u){ if(u!==p.mainImage) combined.push(u); });
   p.images=combined; p.gallery=gal; p.img=p.mainImage||p.image;
   // Also keep emoji for old store compat
   if(!p.emoji) p.emoji='👕';
@@ -301,7 +301,7 @@ function renderCategories(){
 }
 function addCat(){ var v=document.getElementById('newCat').value.trim(); if(!v) return; if(categories.indexOf(v)===-1) categories.push(v); renderCategories(); }
 function renderSettings(){
-  document.getElementById('tab-settings').innerHTML='<h3>Settings</h3><div class="card"><label>اسم المتجر</label><input id="set-name" value="'+(settings.storeName||'AYKA')+'"><br><br><label>ايميل المالك</label><input id="set-email" value="'+(settings.email||'')+'"></div><div class="card" style="border:2px solid #3B82F6"><h4>📁 GitHub - الصور كملفات (مرة واحدة بس)</h4><p class="small">من غيرها الصور هتفضل بالطريقة القديمة البطيئة. لو كتبتهم هنا، أي منتج جديد هتضيفه هيترفع أوتوماتيك، والمتجر هيفتح في ثانية.</p><label>GitHub Token (ghp_...)</label><input id="set-token" placeholder="الصقه هنا، بيبدأ بـ ghp_" value="'+(settings.githubToken||'')+'" style="font-size:12px"><br><br><div class="small" id="cloud-status"></div></div>';
+  document.getElementById('tab-settings').innerHTML='<h3>Settings</h3><div class="card"><label>اسم المتجر</label><input id="set-name" value="'+(settings.storeName||'AYKA')+'"><br><br><label>ايميل المالك</label><input id="set-email" value="'+(settings.email||'')+'"></div><div class="card" style="border:2px solid #3B82F6"><h4>📁 GitHub ayka-images - الصور كملفات (مرة واحدة بس)</h4><p class="small">من غيرها الصور هتفضل بالطريقة القديمة البطيئة. لو كتبتهم هنا، أي منتج جديد هتضيفه هيترفع أوتوماتيك، والمتجر هيفتح في ثانية.</p><label>GitHub Token (ghp_...)</label><input id="set-token" placeholder="الصقه هنا، بيبدأ بـ ghp_" value="'+(settings.githubToken||'')+'" style="font-size:12px"><br><br><div class="small" id="cloud-status"></div></div>';
   document.getElementById('set-name').onchange=function(){ settings.storeName=this.value; markDirty(); }; document.getElementById('set-email').onchange=function(){ settings.email=this.value; markDirty(); };
   document.getElementById('set-token').onchange=function(){ settings.githubToken=this.value.trim(); markDirty(); document.getElementById('cloud-status').textContent='اتحفظ، دوس حفظ التغييرات فوق عشان يثبت'; };
   
