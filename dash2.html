@@ -144,7 +144,7 @@ async function loadAll(){
   }catch(e){ console.warn('loadAll fast failed', e); }
 }
 async function pollOrders(){
-  if(dirty) return; // حماية: لو بتعدل، ميكتبش فوق تعديلك قبل ما تدوس حفظ
+  if(dirty || window._deletingOrder) return; // حماية: لو بتعدل أو بتمسح، ميكتبش فوق تعديلك
   try{
     var r=await fetch(FB+'/orders.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]);
     var newOrders=fresh.filter(function(o){ return o && o.id && !orders.find(function(x){return String(x.id)===String(o.id);}); });
@@ -252,21 +252,43 @@ function renderInventory(){
   document.getElementById('tab-inventory').innerHTML=h;
   document.querySelectorAll('#tab-inventory input').forEach(function(inp){ inp.onchange=function(){ var pi=Number(inp.dataset.pi), vi=Number(inp.dataset.vi); products[pi].variants[vi].stock=Number(inp.value)||0; products[pi].stock=products[pi].variants.reduce(function(s,x){return s+(Number(x.stock)||0);},0); markDirty(); renderInventory(); }; });
 }
+
+function getCust(o){
+  var c = {};
+  var srcs = [o.customer, o.order, o.details, o.customerInfo, o];
+  srcs.forEach(function(s){
+    if(!s || typeof s!=='object') return;
+    if(s.name && !c.name) c.name = s.name;
+    if(s.customerName && !c.name) c.name = s.customerName;
+    if(s.fullName && !c.name) c.name = s.fullName;
+    if(s.phone && !c.phone) c.phone = s.phone;
+    if(s.customerPhone && !c.phone) c.phone = s.customerPhone;
+    if(s.phoneNumber && !c.phone) c.phone = s.phoneNumber;
+    if(s.address && !c.address) c.address = s.address;
+    if(s.governorate && !c.governorate) c.governorate = s.governorate;
+    if(s.gov && !c.governorate) c.governorate = s.gov;
+  });
+  // if customer itself is a string, it's the name
+  if(typeof o.customer==='string' && !c.name) c.name = o.customer;
+  if(typeof o.customerName==='string' && !c.name) c.name = o.customerName;
+  return c;
+}
+var _showAllOrders=false;
 function renderOrders(){
   var h='<h3>Orders ('+orders.length+')</h3><p class="small">الاوردر بيظهر في 3 ثواني من المتجر - الخصم بيتم مرة واحدة بس</p>';
   if(!orders.length) h+='<div class="card">مفيش طلبات</div>';
-  orders.slice().reverse().forEach(function(o){
+  var _list=orders.slice().reverse(); var _shown=_showAllOrders?_list:_list.slice(0,20); if(!_showAllOrders && _list.length>20) h+='<div class="card" style="text-align:center"><button class="btnG" onclick="_showAllOrders=true;renderOrders()">عرض كل الطلبات ('+_list.length+') - العرض السريع بيعرض آخر 20 بس</button></div>'; _shown.forEach(function(o){
     var items=(o.items||o.products||o.cart||[]); if(!items.length && o.order && o.order.items) items=o.order.items;
     var itemsHtml=items.map(function(i){ var q=(i.qty||i.quantity||1); var pr=i.price||i.total||''; return '<div class="order-item"><b>'+(i.name||'منتج')+'</b><br><span>المقاس: '+(i.size||'-')+' &nbsp;•&nbsp; اللون: '+(i.color||'-')+' &nbsp;•&nbsp; الكمية: '+q+(pr?' &nbsp;•&nbsp; السعر: '+pr+' EGP':'')+'</span></div>'; }).join('') || '<div class="order-item">مفيش تفاصيل منتجات</div>';
-    var phoneRaw=String(o.phone||o.customerPhone||''); var phoneClean=phoneRaw.replace(/\D/g,'');
+    var _c=getCust(o); var phoneRaw=String(_c.phone||o.phone||o.customerPhone||''); var phoneClean=phoneRaw.replace(/\D/g,'');
     var dateStr=''; try{ if(o.createdAt) dateStr=new Date(o.createdAt).toLocaleString('ar-EG'); }catch(e){}
     var subtotal=o.subtotal!=null?o.subtotal:''; var ship=o.shipping!=null?o.shipping:o.shippingCost||'';
     h+='<div class="order-card">'
       +'<div class="order-top"><div class="order-id">Order #'+(o.id||'')+'<small>'+dateStr+'</small></div><span class="badge '+(o.status==='Confirmed'?'badgeC':'badgeP')+'" style="font-size:13px;padding:8px 14px">'+(o.status||'Pending')+'</span></div>'
-      +'<div class="order-field"><span class="order-label">الزبون</span><span class="order-value">'+(o.customerName||o.name||o.customer||'-')+'</span></div>'
+      +'<div class="order-field"><span class="order-label">الزبون</span><span class="order-value">'+(getCust(o).name||'-')+'</span></div>'
       +'<div class="order-field"><span class="order-label">التليفون</span><a class="order-value phone" href="tel:'+phoneClean+'">'+phoneRaw+'</a></div>'
-      +'<div class="order-field"><span class="order-label">العنوان</span><span class="order-value">'+(o.address||'-')+'</span></div>'
-      +'<div class="order-field"><span class="order-label">المحافظة</span><span class="order-value">'+(o.governorate||o.gov||'-')+'</span></div>'
+      +'<div class="order-field"><span class="order-label">العنوان</span><span class="order-value">'+(_c.address||o.address||'-')+'</span></div>'
+      +'<div class="order-field"><span class="order-label">المحافظة</span><span class="order-value">'+(_c.governorate||o.governorate||o.gov||'-')+'</span></div>'
       +'<div style="margin-top:10px"><div class="order-label" style="margin-bottom:4px">المنتجات</div>'+itemsHtml+'</div>'
       +'<div class="order-field"><span class="order-label">الفرعي Subtotal</span><span class="order-value">'+(subtotal!==''?subtotal+' EGP':'-')+'</span></div>'
       +'<div class="order-field"><span class="order-label">الشحن Shipping</span><span class="order-value">'+(ship!==''?ship+' EGP':'-')+'</span></div>'
@@ -277,16 +299,27 @@ function renderOrders(){
   document.getElementById('tab-orders').innerHTML=h;
 }
 async function confirmOrder(id){
-  var o=orders.find(function(x){return String(x.id)===String(id);}); if(!o) return;
-  o.status='Confirmed'; // بيغير الحالة بس، مش بيخصم تاني - الخصم اتعمل مرة واحدة لما الاوردر وصل
-  await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(orders)});
-  renderOrders(); document.getElementById('saveStatus').textContent='✅ الاوردر اتأكد';
+  window._deletingOrder=true;
+  try{
+    var r=await fetch(FB+'/orders.json?ts='+Date.now()); var fresh=await r.json(); var arr=Array.isArray(fresh)?fresh:Object.values(fresh||[]);
+    var o=arr.find(function(x){return String(x.id)===String(id);}); if(!o) return;
+    o.status='Confirmed';
+    await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr)});
+    orders=arr; renderOrders(); document.getElementById('saveStatus').textContent='✅ الاوردر اتأكد';
+  }catch(e){}
+  setTimeout(function(){ window._deletingOrder=false; }, 2000);
 }
 async function deleteOrder(id){
   if(!confirm('تلغي الاوردر ده؟ المخزون مش هيرجع لوحده، لازم ترجعه يدوي من Inventory + حفظ.')) return;
-  orders=orders.filter(function(x){return String(x.id)!==String(id);});
-  await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(orders)});
-  renderOrders();
+  window._deletingOrder=true;
+  try{
+    var r=await fetch(FB+'/orders.json?ts='+Date.now()); var fresh=await r.json(); var arr=Array.isArray(fresh)?fresh:Object.values(fresh||[]);
+    arr=arr.filter(function(x){return String(x.id)!==String(id);});
+    var res=await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr)});
+    if(res.ok){ orders=arr; renderOrders(); document.getElementById('saveStatus').textContent='✅ الاوردر اتمسح نهائي'; }
+    else { document.getElementById('saveStatus').textContent='⚠️ المسح فشل، جرب تاني'; }
+  }catch(e){ document.getElementById('saveStatus').textContent='⚠️ المسح فشل: '+(e.message||e); }
+  setTimeout(function(){ window._deletingOrder=false; }, 3000);
 }
 function renderShipping(){
   var h='<h3>Shipping - الشحن لكل محافظة (27 محافظة)</h3><p class="small">القاهرة 50، الجيزة 50، الاسكندرية 70، الباقي 80-120</p><div class="card"><table><tr><th>المحافظة</th><th>سعر الشحن</th></tr>';
