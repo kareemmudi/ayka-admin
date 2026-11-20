@@ -149,7 +149,6 @@ async function pollOrders(){
     var r=await fetch(FB+'/orders.json?ts='+Date.now()); var fresh=await r.json(); if(!Array.isArray(fresh)) fresh=Object.values(fresh||[]);
     var newOrders=fresh.filter(function(o){ return o && o.id && !orders.find(function(x){return String(x.id)===String(o.id);}); });
     if(newOrders.length){ orders=fresh; renderOrders(); newOrders.forEach(function(o){ tryDeduct(o); }); }
-    else if(JSON.stringify(fresh)!==JSON.stringify(orders)){ orders=fresh; renderOrders(); }
   }catch(e){}
 }
 async function tryDeduct(order){
@@ -273,9 +272,50 @@ function getCust(o){
   if(typeof o.customerName==='string' && !c.name) c.name = o.customerName;
   return c;
 }
+
+var _selectedOrders = new Set();
+function toggleOrderSel(id, el){ if(el.checked) _selectedOrders.add(String(id)); else _selectedOrders.delete(String(id)); renderOrders(); }
+function selectAllOrders(v){ _selectedOrders.clear(); if(v){ orders.forEach(function(o){ _selectedOrders.add(String(o.id)); }); } renderOrders(); }
+async function deleteSelectedOrders(){
+  if(!_selectedOrders.size){ alert('اختار أوردر واحد على الأقل'); return; }
+  if(!confirm('هتمسح ' + _selectedOrders.size + ' أوردر مرة واحدة؟')) return;
+  var ids = Array.from(_selectedOrders);
+  _selectedOrders.clear();
+  window._deletingOrder = true;
+  orders = orders.filter(function(x){ return ids.indexOf(String(x.id))===-1; });
+  renderOrders();
+  try{
+    var res = await fetch(FB + '/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(orders)});
+    document.getElementById('saveStatus').textContent = res.ok ? ('اتمسح ' + ids.length + ' أوردر مرة واحدة') : 'المسح فشل';
+  }catch(e){ document.getElementById('saveStatus').textContent='المسح فشل'; }
+  setTimeout(function(){ window._deletingOrder=false; }, 1500);
+}
+async function deleteAllPending(){
+  var pend = orders.filter(function(o){ return (o.status||'Pending')!=='Confirmed'; });
+  if(!pend.length){ alert('مفيش Pending'); return; }
+  if(!confirm('هتمسح كل الـ Pending؟ عددهم ' + pend.length)) return;
+  window._deletingOrder = true;
+  orders = orders.filter(function(o){ return (o.status||'Pending')==='Confirmed'; });
+  renderOrders();
+  try{
+    var res = await fetch(FB + '/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(orders)});
+    document.getElementById('saveStatus').textContent = res.ok ? ('اتمسح ' + pend.length + ' أوردر Pending') : 'المسح فشل';
+  }catch(e){}
+  setTimeout(function(){ window._deletingOrder=false; }, 1500);
+}
+async function deleteAllOrders(){
+  if(!confirm('هتمسح كل الأوردرات (' + orders.length + ')؟ دي مبتتلغيش')) return;
+  window._deletingOrder = true;
+  orders = [];
+  renderOrders();
+  try{ await fetch(FB + '/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify([])}); document.getElementById('saveStatus').textContent='اتمسح الكل'; }catch(e){}
+  setTimeout(function(){ window._deletingOrder=false; }, 1500);
+}
 var _showAllOrders=false;
 function renderOrders(){
   var h='<h3>Orders ('+orders.length+')</h3><p class="small">الاوردر بيظهر في 3 ثواني من المتجر - الخصم بيتم مرة واحدة بس</p>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btnG" onclick="selectAllOrders(true)">تحديد الكل</button><button class="btnG" onclick="selectAllOrders(false)">إلغاء التحديد</button><button class="btnG" style="background:#f59e0b" onclick="deleteAllPending()">مسح كل Pending</button><button class="btnG" style="background:#ef4444" onclick="deleteAllOrders()">مسح الكل</button></div>';
+  if(_selectedOrders.size){ h += '<div style="background:#1a1a1d;border:1px solid #3B82F6;border-radius:12px;padding:12px;margin:10px 0;text-align:center"><b>محدد ' + _selectedOrders.size + ' أوردر</b><br><button class="btnG" style="background:#ef4444;margin-top:8px" onclick="deleteSelectedOrders()">مسح المحدد مرة واحدة</button></div>'; }
   if(!orders.length) h+='<div class="card">مفيش طلبات</div>';
   var _list=orders.slice().reverse(); var _shown=_showAllOrders?_list:_list.slice(0,20); if(!_showAllOrders && _list.length>20) h+='<div class="card" style="text-align:center"><button class="btnG" onclick="_showAllOrders=true;renderOrders()">عرض كل الطلبات ('+_list.length+') - العرض السريع بيعرض آخر 20 بس</button></div>'; _shown.forEach(function(o){
     var items=(o.items||o.products||o.cart||[]); if(!items.length && o.order && o.order.items) items=o.order.items;
@@ -283,8 +323,9 @@ function renderOrders(){
     var _c=getCust(o); var phoneRaw=String(_c.phone||o.phone||o.customerPhone||''); var phoneClean=phoneRaw.replace(/\D/g,'');
     var dateStr=''; try{ if(o.createdAt) dateStr=new Date(o.createdAt).toLocaleString('ar-EG'); }catch(e){}
     var subtotal=o.subtotal!=null?o.subtotal:''; var ship=o.shipping!=null?o.shipping:o.shippingCost||'';
+    var _chk = _selectedOrders.has(String(o.id)) ? 'checked' : '';
     h+='<div class="order-card">'
-      +'<div class="order-top"><div class="order-id">Order #'+(o.id||'')+'<small>'+dateStr+'</small></div><span class="badge '+(o.status==='Confirmed'?'badgeC':'badgeP')+'" style="font-size:13px;padding:8px 14px">'+(o.status||'Pending')+'</span></div>'
+      +'<div class="order-top"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" '+_chk+' onchange="toggleOrderSel(\''+o.id+'\',this)" style="width:20px;height:20px"> <span style="font-size:12px;color:#888">تحديد</span></label><div class="order-id">Order #'+(o.id||'')+'<small>'+dateStr+'</small></div><span class="badge '+(o.status==='Confirmed'?'badgeC':'badgeP')+'" style="font-size:13px;padding:8px 14px">'+(o.status||'Pending')+'</span></div>'
       +'<div class="order-field"><span class="order-label">الزبون</span><span class="order-value">'+(getCust(o).name||'-')+'</span></div>'
       +'<div class="order-field"><span class="order-label">التليفون</span><a class="order-value phone" href="tel:'+phoneClean+'">'+phoneRaw+'</a></div>'
       +'<div class="order-field"><span class="order-label">العنوان</span><span class="order-value">'+(_c.address||o.address||'-')+'</span></div>'
@@ -310,16 +351,16 @@ async function confirmOrder(id){
   setTimeout(function(){ window._deletingOrder=false; }, 2000);
 }
 async function deleteOrder(id){
-  if(!confirm('تلغي الاوردر ده؟ المخزون مش هيرجع لوحده، لازم ترجعه يدوي من Inventory + حفظ.')) return;
+  if(!confirm('تلغي الاوردر ده؟')) return;
   window._deletingOrder=true;
+  _selectedOrders.delete(String(id));
+  orders=orders.filter(function(x){return String(x.id)!==String(id);});
+  renderOrders();
   try{
-    var r=await fetch(FB+'/orders.json?ts='+Date.now()); var fresh=await r.json(); var arr=Array.isArray(fresh)?fresh:Object.values(fresh||[]);
-    arr=arr.filter(function(x){return String(x.id)!==String(id);});
-    var res=await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr)});
-    if(res.ok){ orders=arr; renderOrders(); document.getElementById('saveStatus').textContent='✅ الاوردر اتمسح نهائي'; }
-    else { document.getElementById('saveStatus').textContent='⚠️ المسح فشل، جرب تاني'; }
-  }catch(e){ document.getElementById('saveStatus').textContent='⚠️ المسح فشل: '+(e.message||e); }
-  setTimeout(function(){ window._deletingOrder=false; }, 3000);
+    var res=await fetch(FB+'/orders.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(orders)});
+    document.getElementById('saveStatus').textContent = res.ok ? 'الاوردر اتمسح' : 'المسح فشل';
+  }catch(e){ document.getElementById('saveStatus').textContent='المسح فشل'; }
+  setTimeout(function(){ window._deletingOrder=false; }, 1500);
 }
 function renderShipping(){
   var h='<h3>Shipping - الشحن لكل محافظة (27 محافظة)</h3><p class="small">القاهرة 50، الجيزة 50، الاسكندرية 70، الباقي 80-120</p><div class="card"><table><tr><th>المحافظة</th><th>سعر الشحن</th></tr>';
